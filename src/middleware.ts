@@ -1,21 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export function middleware(request: NextRequest) {
-//   const token = request.cookies.get('refreshToken');
-//   const redirectUrl = new URL('/signin', request.url);
+  // Kiểm tra xem cookie 'access_token' có tồn tại không
+  const accessToken = request.cookies.get('access_token');
 
-//   if (!token && request.nextUrl.pathname !== '/signin') {
-//     redirectUrl.searchParams.set('redirect', request.nextUrl.pathname);
-//     return NextResponse.redirect(redirectUrl);
-//   }
+  // Nếu tồn tại cookie 'access_token', điều hướng đến trang /home
+  if (accessToken) {
+    return NextResponse.redirect(new URL('/home', request.url));
+  }
 
-//   if (token && request.nextUrl.pathname === '/signin') {
-//     return NextResponse.redirect(new URL('/', request.url));
-//   }
-
+  // Nếu không có cookie 'access_token', cho phép tiếp tục truy cập trang /
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/home/:path*'],
+  matcher: ['/'], // Áp dụng middleware cho đường dẫn '/'
 };
