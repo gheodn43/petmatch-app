@@ -25,3 +25,52 @@ body {
     text-wrap: balance;
   }
 }
+
+.bg-custom {
+  background-image: url('/images/bg-small.jpg');
+  background-size: cover;
+  background-position: center;
+}
+
+/* Ảnh nền cho kích thước màn hình từ 768px trở lên */
+@media (min-width: 768px) {
+  .bg-custom {
+    background-image: url('/images/bg-medium.jpg');
+  }
+}
+
+/* Ảnh nền cho kích thước màn hình từ 1200px trở lên */
+@media (min-width: 1200px) {
+  .bg-custom {
+    background-image: url('/images/bg-large.jpg');
+  }
+}
+
+.header-gradient {
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0) 100%);
+}
+
+.logo-white {
+  background-image: url('/images/logo-white.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  width: 100px; /* Kích thước logo mặc định */
+  height: 100px; /* Kích thước logo mặc định */
+}
+
+/* Đặt kích thước logo cho màn hình rộng hơn 768px */
+@media (min-width: 768px) {
+  .logo-white {
+    width: 150px; /* Kích thước logo cho màn hình trung bình */
+    height: 150px; /* Kích thước logo cho màn hình trung bình */
+  }
+}
+
+/* Đặt kích thước logo cho màn hình rộng hơn 1200px */
+@media (min-width: 1200px) {
+  .logo-white {
+    width: 200px; /* Kích thước logo cho màn hình lớn */
+    height: 200px; /* Kích thước logo cho màn hình lớn */
+  }
+}
