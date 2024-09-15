@@ -18,7 +18,6 @@ export default function LoginModal({ isOpen, onClose }) {
 
   return (
     <Dialog open={isOpen} onClose={onClose} className="fixed inset-0 z-50 overflow-y-auto">
-      {/* Backdrop */}
       <div className="fixed inset-0 bg-black opacity-60" aria-hidden="true"></div>
       <div className="flex items-center justify-center min-h-screen px-4">
       <Dialog.Panel className="bg-white rounded-lg relative w-full max-w-md px-4 h-auto">
@@ -32,7 +31,7 @@ export default function LoginModal({ isOpen, onClose }) {
               <svg
                 className="w-9 h-9"
                 fill="none"
-                stroke="currentColor"  // Đổi thành màu bạn muốn
+                stroke="currentColor"
                 strokeWidth="2"
                 viewBox="0 0 20 20"
                 xmlns="http://www.w3.org/2000/svg"
