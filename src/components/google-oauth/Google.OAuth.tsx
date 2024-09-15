@@ -1,6 +1,7 @@
+'use client'
 import { GoogleLogin, CredentialResponse } from '@react-oauth/google';
 import jwt from 'jsonwebtoken';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 
 const GoogleOAuth: React.FC = () => {
     const router = useRouter();

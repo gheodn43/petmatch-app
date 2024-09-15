@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import { Jomhuria } from 'next/font/google'
 import "./globals.css";
 const jomhuria = Jomhuria({
@@ -22,7 +23,9 @@ export default function RootLayout({
     <html lang="en">
       <body
       >
-        {children}
+        <GoogleOAuthProvider clientId="717208055945-s60n7eev35fbuvpma1cdpvru5j83fose.apps.googleusercontent.com">
+          {children}
+        </GoogleOAuthProvider>
       </body>
     </html>
   );
