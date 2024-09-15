@@ -1,13 +1,34 @@
+'use client';
 import { GoogleLogin, CredentialResponse } from '@react-oauth/google';
-import jwt from 'jsonwebtoken';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 
 const GoogleOAuth: React.FC = () => {
     const router = useRouter();
 
-    const handleSuccess = (credentialResponse: CredentialResponse) => {
-        jwtDecoder(credentialResponse?.credential);
-        router.push('/signup');
+    const handleSuccess = async (credentialResponse: CredentialResponse) => {
+        if (credentialResponse?.credential) {
+            try {
+                // Gửi credential đến API
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ credential: credentialResponse.credential }),
+                });
+
+                if (response.ok) {
+                    // Xử lý phản hồi từ API và chuyển hướng người dùng
+                    router.push('/home');
+                } else {
+                    console.error('Login failed', await response.json());
+                }
+            } catch (error) {
+                console.error('Error sending credential', error);
+            }
+        } else {
+            console.error('Credential is required');
+        }
     };
 
     return (
@@ -20,17 +41,6 @@ const GoogleOAuth: React.FC = () => {
             shape='pill'
         />
     );
-};
-
-const jwtDecoder = (token: string | undefined) => {
-    if (token) {
-        try {
-            const decoded = jwt.decode(token);
-            console.log(decoded);
-        } catch (error) {
-            console.error('Failed to decode token', error);
-        }
-    }
 };
 
 export default GoogleOAuth;

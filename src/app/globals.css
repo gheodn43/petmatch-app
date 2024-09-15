@@ -1,15 +1,19 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import url('https://fonts.googleapis.com/css2?family=Jomhuria&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --font-jomhuria: 'Jomhuria', serif; 
+  --font-nunito: 'Nunito', sans-serif;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
+    --background: #ffffff;
     --foreground: #ededed;
   }
 }
@@ -17,12 +21,52 @@
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-nunito), Arial, Helvetica, sans-serif;
+}
+h1, h2, h3, h4, h5, h6, p, span, a {
+  font-family: var(--font-nunito), Arial, Helvetica, sans-serif;
+}
+
+.responsive-text {
+  @apply text-xs sm:text-sm md:text-lg lg:text-xl;
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+  .responsive-font-small {
+    font-size: clamp(16px, 4vw + 1rem, 16px);
+  }
+  .responsive-font-medium {
+    font-size: clamp(16px, 5vw + 1rem, 18px);
+  }
+  .responsive-font-large {
+    font-size: clamp(16px, 6vw + 1rem, 21px);
+  }
+
+  @media (min-width: 640px) { /* Tablet */
+    .responsive-font-small {
+      font-size: clamp(20px, 3vw + 1rem, 20px)
+    }
+    .responsive-font-medium {
+      font-size: clamp(20px, 4vw + 1rem, 22px);
+    }
+    .responsive-font-large {
+      font-size: clamp(20px, 5vw + 1rem, 25px);
+    }
+  }
+
+  @media (min-width: 1024px) { /* Desktop */
+    .responsive-font-small {
+      font-size: clamp(21px, 3vw + 1rem, 21px);
+    }
+    .responsive-font-medium {
+      font-size: clamp(21px, 4vw + 1rem, 24px);
+    }
+    .responsive-font-large {
+      font-size: clamp(21px, 5vw + 1rem, 27px);
+    }
   }
 }
 
