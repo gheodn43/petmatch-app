@@ -16,17 +16,17 @@ export default function Header() {
             </div>
             <div className="flex items-end space-x-6 text-white ">
                 <Link href="/">
-                    <p className="responsive-font-small leading-6 font-nunito">
+                    <p className="responsive-text leading-6 font-nunito">
                         Diễn Đàn
                     </p>
                 </Link>
                 <Link href="/">
-                    <p className="responsive-font-small leading-6 font-nunito">
+                    <p className="responsive-text leading-6 font-nunito">
                         Tư Vấn
                     </p>
                 </Link>
                 <Link href="/">
-                    <p className="responsive-font-small leading-6 font-nunito ">
+                    <p className="responsive-text leading-6 font-nunito ">
                         Về Chúng Tôi
                     </p>
                 </Link>

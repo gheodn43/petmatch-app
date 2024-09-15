@@ -26,6 +26,11 @@ body {
 h1, h2, h3, h4, h5, h6, p, span, a {
   font-family: var(--font-nunito), Arial, Helvetica, sans-serif;
 }
+
+.responsive-text {
+  @apply text-xs sm:text-sm md:text-lg lg:text-xl;
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;

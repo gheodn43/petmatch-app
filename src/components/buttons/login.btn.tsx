@@ -8,7 +8,7 @@ export default function LoginBtn() {
     };
     return <>
           <button
-            className="text-sm px-8 py-3 md:text-lg md:px-6 lg:text-xl font-semibold font-Nunito leading-6 text-white border rounded-[30px] "
+            className="responsive-text px-8 py-3 md:px-6 font-semibold font-Nunito leading-6 text-white border rounded-[30px] hover:bg-white hover:bg-opacity-10"
             onClick={handleLogin}
           >
             Đăng Nhập
