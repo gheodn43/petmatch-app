@@ -16,6 +16,7 @@ const config: Config = {
         tertiary: "#EEEEEE",
       },
     },
+    
   },
   plugins: [],
 };
