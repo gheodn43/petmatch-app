@@ -35,7 +35,7 @@ export default function MainPageLayout({
                 {side}
             </div>
             <div
-                className="w-1 bg-tertiary cursor-col-resize"
+                className="w-[2px] bg-tertiary cursor-col-resize"
                 onMouseDown={handleMouseDown}
                 style={{ height: '100%' }}
             ></div>
