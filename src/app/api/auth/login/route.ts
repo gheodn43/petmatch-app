@@ -61,7 +61,7 @@ export async function POST(req: Request) {
     const accessTokenCookie = cookie.serialize('access_token', accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      maxAge: 3600 * 24 * 7, // 1 tuần
+      maxAge: 3600 * 24 * 7,
       path: '/',
     });
 
@@ -71,7 +71,7 @@ export async function POST(req: Request) {
       user_name: user_name
     }), {
       secure: process.env.NODE_ENV === 'production',
-      maxAge: 3600 * 24 * 7, // 1 tuần
+      maxAge: 3600 * 24 * 7, 
       path: '/',
     });
 
