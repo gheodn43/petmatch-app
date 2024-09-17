@@ -10,30 +10,35 @@ type UserInfor = {
 };
 
 export default function SideHeader() {
-    const getUserInforFromCookie = (): UserInfor => {
-        const cookieString = document.cookie
-            .split('; ')
-            .find((row) => row.startsWith('user_info='));
-        if (cookieString) {
-            const cookieValue = cookieString.split('=')[1];
-            try {
-                return JSON.parse(decodeURIComponent(cookieValue));
-            } catch (error) {
-                console.error('Error parsing cookie', error);
-            }
-        }
-        return {
-            user_role: 'free',
-            user_name: 'test user',
-            user_image:'https://t3.ftcdn.net/jpg/02/00/90/24/360_F_200902415_G4eZ9Ok3Ypd4SZZKjc8nqJyFVp1eOD6V.jpg',
-        };
-    };
+    const [userInfor, setUserInfor] = useState<UserInfor>({
+        user_role: 'free',
+        user_name: 'test user',
+        user_image: 'https://t3.ftcdn.net/jpg/02/00/90/24/360_F_200902415_G4eZ9Ok3Ypd4SZZKjc8nqJyFVp1eOD6V.jpg',
+    });
 
-    const [userInfor, setUserInfor] = useState<UserInfor>(getUserInforFromCookie());
     useEffect(() => {
+        const getUserInforFromCookie = (): UserInfor => {
+            const cookieString = document.cookie
+                .split('; ')
+                .find((row) => row.startsWith('user_info='));
+            if (cookieString) {
+                const cookieValue = cookieString.split('=')[1];
+                try {
+                    return JSON.parse(decodeURIComponent(cookieValue));
+                } catch (error) {
+                    console.error('Error parsing cookie', error);
+                }
+            }
+            return {
+                user_role: 'free',
+                user_name: 'test user',
+                user_image: 'https://t3.ftcdn.net/jpg/02/00/90/24/360_F_200902415_G4eZ9Ok3Ypd4SZZKjc8nqJyFVp1eOD6V.jpg',
+            };
+        };
+
         const userInforFromCookie = getUserInforFromCookie();
         setUserInfor(userInforFromCookie);
-    }, []);
+    }, []); // Chạy chỉ một lần khi component mount
 
     return (
         <div className="flex justify-between items-center bg-gradient-to-r from-secondary to-yellow-300 h-16 p-4 cursor-pointer">

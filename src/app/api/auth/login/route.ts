@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import { DynamoDBClient, QueryCommand, PutItemCommand } from '@aws-sdk/client-dynamodb';
-import jwt from 'jsonwebtoken';
+import { SignJWT, jwtVerify, decodeJwt } from 'jose';
 import cookie from 'cookie';
 
 const dynamoDB = new DynamoDBClient({});
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET as string;
 
 export async function POST(req: Request) {
   const { credential } = await req.json();
@@ -15,10 +15,11 @@ export async function POST(req: Request) {
   }
 
   try {
-    const decodedToken = jwt.decode(credential) as { email: string; name: string; picture: string } | null;
+    const decodedToken = decodeJwt(credential) as { email: string; name: string; picture: string } | null;
     if (!decodedToken || !decodedToken.email) {
       return NextResponse.json({ message: 'Invalid credential.' }, { status: 400 });
     }
+
     const user_email = decodedToken.email;
     const user_picture = decodedToken.picture;
     const user_name = decodedToken.name;
@@ -54,7 +55,11 @@ export async function POST(req: Request) {
       await dynamoDB.send(new PutItemCommand(putItemParams));
     }
 
-    const accessToken = jwt.sign({ user_id, user_email }, JWT_SECRET!, { expiresIn: '1h' });
+    // Create a new JWT token
+    const accessToken = await new SignJWT({ user_id, user_email })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setExpirationTime('1h')
+      .sign(new TextEncoder().encode(JWT_SECRET));
 
     // Create NextResponse
     const response = NextResponse.json({ message: 'User registered and login successful.' }, { status: 201 });
