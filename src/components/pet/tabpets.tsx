@@ -3,17 +3,10 @@ import { useRouter } from 'next/navigation';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import React from 'react';
-
-type Pet = {
-  pet_id: string;
-  pet_name: string;
-  pet_age: string;
-  pet_type: string;
-  pet_img1: string;
-};
+import { PetOverviewDto } from '@/app/model/pet';
 
 type TabPetsProps = {
-  pets: Pet[];
+  pets: PetOverviewDto[];
 };
 
 
@@ -31,10 +24,10 @@ const TabPets: React.FC<TabPetsProps> = ({ pets }) => {
         <div
           key={pet.pet_id}
           className="flex flex-col items-center cursor-pointer"
-          onClick={() => handleChangePetView(pet.pet_id)} // Xử lý khi click vào ảnh pet
+          onClick={() => handleChangePetView(pet.pet_id)}
         >
           <img
-            src={pet.pet_img1}
+            src={pet.pet_image}
             alt={pet.pet_name}
             className="h-10 w-10 rounded-full object-cover"
           />
@@ -43,7 +36,7 @@ const TabPets: React.FC<TabPetsProps> = ({ pets }) => {
       <div className="flex flex-col items-center justify-center">
         <button
           className="h-10 w-10 flex items-center justify-center bg-gray-200 rounded-full"
-          onClick={handleOpenCreateNewPet} // Xử lý khi click vào dấu +
+          onClick={handleOpenCreateNewPet}
         >
           <FontAwesomeIcon icon={faPlus} className="text-gray-600" />
         </button>

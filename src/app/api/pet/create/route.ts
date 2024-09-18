@@ -1,35 +1,18 @@
 import { NextResponse } from 'next/server';
 import { NextRequest } from 'next/server';
-import { PutObjectCommand } from "@aws-sdk/client-s3";
-import s3Client from '@/lib/s3';
-import diacritics from 'diacritics';
+import { DynamoDBClient, QueryCommand } from '@aws-sdk/client-dynamodb';
+import { getUserIdFromCookie } from '@/utils/authUtils';
+import { v4 as uuidv4 } from 'uuid';
+import { uploadFileToS3 } from '@/utils/uploadFIleUtils';
 
 
-function sanitizeFileName(fileName: string): string {
-    let sanitizedName = diacritics.remove(fileName);
-    // Thay thế khoảng trắng và các ký tự đặc biệt bằng dấu gạch dưới
-    sanitizedName = sanitizedName
-        .replace(/\s+/g, '_')
-        .replace(/[^a-zA-Z0-9._-]/g, '_');
-    return sanitizedName;
-}
 
-async function uploadFileToS3(buffer: Buffer, fileName: string, contentType: string) {
-    const sanitizedFileName = sanitizeFileName(fileName);
-    const params = {
-        Bucket: process.env.AWS_S3_BUCKET_NAME,
-        Key: sanitizedFileName,
-        Body: buffer,
-        ContentType: contentType,
-    };
-
-    const command = new PutObjectCommand(params);
-    await s3Client.send(command);
-    const fileUrl = `https://${process.env.AWS_S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${sanitizedFileName}`;
-    return fileUrl;
-}
 export async function POST(request: NextRequest) {
     try {
+        const userIdOrResponse = await getUserIdFromCookie(request);
+        if (userIdOrResponse instanceof NextResponse) return userIdOrResponse;
+        const user_id = userIdOrResponse;
+
         const formData = await request.formData();
         const petInfo = {
             petType: formData.get('petType') as string,
@@ -39,13 +22,14 @@ export async function POST(request: NextRequest) {
             birthCount: formData.get('birthCount') as string,
             gender: formData.get('gender') as string,
             pricing: formData.get('pricing') as string,
-            images: formData.getAll('images') as File[], 
+            images: formData.getAll('images') as File[],
             certificates: formData.getAll('certificates') as File[]
         };
         if (!petInfo.images || petInfo.images.length === 0) {
             return NextResponse.json({ error: "Images are required." }, { status: 400 });
         }
         const uploadedImages = [];
+        const uploadCertificates = []
         for (const image of petInfo.images) {
             const buffer = Buffer.from(await image.arrayBuffer());
             const fileName = `${Date.now()}_${image.name}`;
@@ -53,7 +37,16 @@ export async function POST(request: NextRequest) {
             const uploadedFileName = await uploadFileToS3(buffer, fileName, contentType);
             uploadedImages.push(uploadedFileName);
         }
-        console.log(uploadedImages)
+        for (const certificate of petInfo.certificates) {
+            const buffer = Buffer.from(await certificate.arrayBuffer());
+            const fileName = `${Date.now()}_${certificate.name}`;
+            const contentType = certificate.type || 'image/jpeg';
+            const uploadCertificate = await uploadFileToS3(buffer, fileName, contentType);
+            uploadCertificates.push(uploadCertificate);
+        }
+
+        console.log(uploadedImages);
+        console.log(uploadCertificates);
         return NextResponse.json({ success: true, uploadedImages }, { status: 200 });
     } catch (error) {
         console.error("Error uploading files:", error);

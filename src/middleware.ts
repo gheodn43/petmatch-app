@@ -13,12 +13,25 @@ export async function middleware(request: NextRequest) {
   const accessToken = cookies.access_token;
   const url = new URL(request.url);
 
+  // Kiểm tra nếu đang ở trang đăng nhập hoặc trang công khai không cần xác thực
+  if (url.pathname === '/signin') {
+    // Nếu không có token và đang ở trang đăng nhập, cho phép truy cập
+    if (!accessToken) {
+      return NextResponse.next();
+    }
+    // Nếu có token và đang ở trang đăng nhập, chuyển hướng đến trang chính
+    try {
+      await jwtVerify(accessToken, new TextEncoder().encode(JWT_SECRET));
+      return NextResponse.redirect(new URL('/home', request.url));
+    } catch {
+      return NextResponse.next();
+    }
+  }
+
   if (accessToken) {
     try {
       // Xác thực token
       const { payload } = await jwtVerify(accessToken, new TextEncoder().encode(JWT_SECRET));
-
-      // Token hợp lệ và người dùng đang ở trang root ('/'), chuyển hướng đến '/home'
       if (url.pathname === '/') {
         return NextResponse.redirect(new URL('/home', request.url));
       }
@@ -57,20 +70,20 @@ export async function middleware(request: NextRequest) {
         } catch (refreshError) {
           console.error('Failed to refresh token:', refreshError);
           // Chuyển hướng về trang đăng nhập nếu không thể làm mới token
-          return NextResponse.redirect(new URL('/', request.url));
+          return NextResponse.redirect(new URL('/signin', request.url));
         }
       } else {
         console.error('Invalid token:', err);
         // Token không hợp lệ hoặc lỗi khác
-        return NextResponse.redirect(new URL('/', request.url));
+        return NextResponse.redirect(new URL('/signin', request.url));
       }
     }
   } else {
     // Không có token, chuyển hướng về trang đăng nhập
-    return NextResponse.redirect(new URL('/', request.url));
+    return NextResponse.redirect(new URL('/signin', request.url));
   }
 }
 
 export const config = {
-  matcher: ['/', '/home'],
+  matcher: ['/', '/home', '/signin'],
 };
