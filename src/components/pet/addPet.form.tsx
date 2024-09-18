@@ -22,7 +22,9 @@ export default function AddPetForm() {
         petAge: "",
         birthCount: "",
         gender: "",
-        images: [] as string[],
+        pricing: "",
+        images: [] as File[],
+        certificates: [] as File[]
     });
 
     const [showIcon, setShowIcon] = useState(true);
@@ -33,21 +35,26 @@ export default function AddPetForm() {
         }
     }, [petInfo.gender]);
 
-    const convertFileToBase64 = (file: File) => {
-        return new Promise<string>((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onloadend = () => resolve(reader.result as string);
-            reader.onerror = reject;
-        });
-    };
-
     const handleImageChange = async (e: ChangeEvent<HTMLInputElement>) => {
-        const files = Array.from(e.target.files || []);
-        const base64Images = await Promise.all(files.map(file => convertFileToBase64(file)));
+        let selectedImages = Array.from(e.target.files || []);
+        if (selectedImages.length > 5) {
+            selectedImages = selectedImages.slice(0, 5);
+        }
         setPetInfo(prev => ({
             ...prev,
-            images: [...prev.images, ...base64Images]
+            images: [...prev.images, ...selectedImages].slice(0, 5)
+        }));
+    };
+    
+
+    const handleCertificateChange = async (e: ChangeEvent<HTMLInputElement>) => {
+        let selectedCertificates = Array.from(e.target.files || []);
+        if (selectedCertificates.length > 3) {
+            selectedCertificates = selectedCertificates.slice(0, 3);
+        }
+        setPetInfo(prev => ({
+            ...prev,
+            certificates: [...prev.certificates, ...selectedCertificates]
         }));
     };
 
@@ -55,6 +62,12 @@ export default function AddPetForm() {
         setPetInfo(prev => ({
             ...prev,
             images: prev.images.filter((_, index) => index !== indexToRemove)
+        }));
+    };
+    const handleRemoveCertificate = (indexToRemove: number) => {
+        setPetInfo(prev => ({
+            ...prev,
+            certificates: prev.certificates.filter((_, index) => index !== indexToRemove)
         }));
     };
 
@@ -81,25 +94,25 @@ export default function AddPetForm() {
     const handleSubmit = async () => {
         try {
             const formData = new FormData();
-            // Append simple fields
-            Object.entries(petInfo).forEach(([key, value]) => {
-                if (key !== "images") {
-                    formData.append(key, value as string);
-                }
+            formData.append("petType", petInfo.petType);
+            formData.append("petSpecies", petInfo.petSpecies);
+            formData.append("petName", petInfo.petName);
+            formData.append("petAge", petInfo.petAge);
+            formData.append("birthCount", petInfo.birthCount);
+            formData.append("gender", petInfo.gender);
+            formData.append("pricing", petInfo.pricing);
+            petInfo.images.forEach((image, index) => {
+                formData.append(`images`, image);
             });
-
-            // Append base64 images separately
-            petInfo.images.forEach((base64Image, index) => {
-                formData.append('images', base64Image);
+            petInfo.certificates.forEach((certificate, index) => {
+                formData.append(`certificates`, certificate);
             });
-
             await axios.post('/api/pet/create', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
             });
             console.log('successfully')
-            //router.push('/success'); 
         } catch (error) {
             console.error("Error creating pet profile", error);
         }
@@ -121,9 +134,7 @@ export default function AddPetForm() {
                         <select name="petSpecies" className="flex-1 p-2 border border-gray-300 rounded" onChange={handleInputChange}>
                             <option value="" disabled hidden> Chọn giống thú cưng </option>
                             {petTypeOptions.find(({ label }) => label === petInfo.petType)?.species.map(species => (
-                                <option key={species} value={species}>
-                                    {species}
-                                </option>
+                                <option key={species} value={species}> {species}</option>
                             ))}
                             <option>Khác</option>
                         </select>
@@ -139,13 +150,13 @@ export default function AddPetForm() {
                     </div>
 
                     {/* Hàng 4: chọn giới tính và ô input text */}
-                    <div className="flex space-x-4">
+                    <div className="flex items-center space-x-4">
                         <div className="flex space-x-4">
-                            <label>
+                            <label className="flex items-center justify-center">
                                 <input type="radio" name="gender" value="Male" checked={petInfo.gender === "Male"} onChange={() => handleGenderChange("Male")} />
                                 <span className="ml-2">Đực</span>
                             </label>
-                            <label>
+                            <label className="flex items-center justify-center">
                                 <input type="radio" name="gender" value="Female" checked={petInfo.gender === "Female"} onChange={() => handleGenderChange("Female")} />
                                 <span className="ml-2">Cái</span>
                             </label>
@@ -157,25 +168,19 @@ export default function AddPetForm() {
                                 className=" text-gray-400"
                             />
                         ) : (
-                            <input
-                                type="text"
-                                placeholder="VNĐ"
-                                className={` p-2 border border-gray-300 rounded`}
+                            <input type="text" name="pricing" placeholder="VNĐ" className="p-2 border border-gray-300 rounded"
                                 disabled={petInfo.gender !== 'Male'}
                                 onChange={handleInputChange}
                             />
                         )}
                     </div>
 
-
-                    {/* Hàng 5 & 6: input dạng file */}
-                    <input name="images" type="file" multiple className="w-full p-2 border border-gray-300 rounded" onChange={handleImageChange} />
-                    <input name="cerifications" type="file" multiple className="w-full p-2 border border-gray-300 rounded" onChange={handleImageChange} />
+                    <input name="images" type="file" accept=".png, .jpg, .jpeg" multiple className="w-full p-2 border border-gray-300 rounded" onChange={handleImageChange} />
                     <div className="mt-2">
                         {petInfo.images.map((image, index) => (
                             <div key={index} className="relative inline-block mr-4">
                                 <img
-                                    src={image}
+                                    src={URL.createObjectURL(image)}
                                     alt={`Pet Image ${index + 1}`}
                                     className="h-24 w-24 object-cover rounded"
                                 />
@@ -189,7 +194,25 @@ export default function AddPetForm() {
                             </div>
                         ))}
                     </div>
-                    {/* Hàng 7: nút submit */}
+                    <input name="certificates" type="file" accept=".png, .jpg, .jpeg, .pdf"  multiple className="w-full p-2 border border-gray-300 rounded" onChange={handleCertificateChange} />
+                    <div className="mt-2">
+                        {petInfo.certificates.map((image, index) => (
+                            <div key={index} className="relative inline-block mr-4">
+                                <img
+                                    src={URL.createObjectURL(image)}
+                                    alt={`Pet Image ${index + 1}`}
+                                    className="h-24 w-24 object-cover rounded"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => handleRemoveCertificate(index)}
+                                    className="absolute top-0 right-0 p-1 bg-red-600 text-white rounded-full"
+                                >
+                                    X
+                                </button>
+                            </div>
+                        ))}
+                    </div>
                     <Button onClick={handleSubmit} className="w-full p-2 border border-gray-300 rounded"> Tạo</Button>
                 </form>
             </div>
