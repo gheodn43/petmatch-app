@@ -2,35 +2,36 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import TabPets from '@/components/pet/tabpets';
-
-type Pet = {
-  pet_id: string;
-  pet_name: string;
-  pet_age: string;
-  pet_type: string;
-  pet_img1: string;
-};
+import { PetOverviewDto } from '@/app/model/pet';
+import { dbPet, addSamplePetsToDb} from '@/localDB/pet.db'; // Import Dexie database instance
 
 export default function MainSection() {
-  const [pets, setPets] = useState<Pet[]>([]);
+  const [pets, setPets] = useState<PetOverviewDto[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [isNotFound, setIsNotFound] = useState<boolean>(false); // Thêm state để xử lý lỗi 404
+  const [isNotFound, setIsNotFound] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchPets = async () => {
+      //await addSamplePetsToDb();
       try {
-        const response = await fetch('/api/pet/getMyPets');
-        if (response.ok) {
-          const data = await response.json();
-          setPets(data.pets);
-        } else if (response.status === 401) {
-          setError('Unauthorized. Please login again.');
-        } else if (response.status === 404) {
-          setIsNotFound(true);
-        } else if (response.status === 500) {
-          setError('Internal server error. Please try again later.');
+        const localPets = await dbPet.pet.toArray();
+        if (localPets.length > 0) {
+          setPets(localPets);
         } else {
-          setError('An unexpected error occurred.');
+          const response = await fetch('/api/pet/getMyPets');
+          if (response.ok) {
+            const data = await response.json();
+            setPets(data.pets);
+            await dbPet.pet.bulkAdd(data.pets);
+          } else if (response.status === 401) {
+            setError('Unauthorized. Please login again.');
+          } else if (response.status === 404) {
+            setIsNotFound(true);
+          } else if (response.status === 500) {
+            setError('Internal server error. Please try again later.');
+          } else {
+            setError('An unexpected error occurred.');
+          }
         }
       } catch (err) {
         console.error('Fetch error:', err);
@@ -40,24 +41,15 @@ export default function MainSection() {
 
     fetchPets();
   }, []);
-  const samplePets = [{
-    pet_id: '12345',
-    pet_name: 'Max',
-    pet_type: 'Dog',
-    pet_species: 'Labrador',
-    pet_image: 'images/logo-color.png',
-    pet_gender: 'Male',
-    pet_pricing: '500 USD',
-    pet_status: 'active'
-}];
+
   return (
     <div className=''>
-      <TabPets pets={samplePets} /> 
+      <TabPets pets={pets} /> 
       {error ? (
         <p>{error}</p>
       ) : isNotFound ? (
         <div className='flex justify-center items-center'>
-          <div >
+          <div>
             <img
               src="/images/bg-no-pet.png"
               alt="No pets found"
@@ -71,11 +63,10 @@ export default function MainSection() {
           </Link>
         </div>
       ) : pets.length > 0 ? (
-        <div>we will show other pet card in here</div>
+        <div>We will show other pet cards here</div>
       ) : (
         <p>Loading...</p>
       )}
-
     </div>
   );
 }

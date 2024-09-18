@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { Button } from "@headlessui/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLock } from "@fortawesome/free-solid-svg-icons";
+import { PetOverviewDto } from "@/app/model/pet";
+import { dbPet} from '@/localDB/pet.db';
 import axios from 'axios';
 
 const petTypeOptions = [
@@ -107,12 +109,15 @@ export default function AddPetForm() {
             petInfo.certificates.forEach((certificate, index) => {
                 formData.append(`certificates`, certificate);
             });
-            await axios.post('/api/pet/create', formData, {
+            const response = await axios.post('/api/pet/create', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-            console.log('successfully')
+            const petOverview: PetOverviewDto = response.data;
+            console.log('Pet created successfully:', petOverview);
+            await dbPet.pet.put(petOverview);
+            router.push('/home')
         } catch (error) {
             console.error("Error creating pet profile", error);
         }
@@ -140,7 +145,6 @@ export default function AddPetForm() {
                         </select>
                     </div>
 
-                    {/* Hàng 2: ô input dạng text */}
                     <input name="petName" type="text" placeholder="Tên thú cưng" className="w-full p-2 border border-gray-300 rounded" onChange={handleInputChange} />
 
                     {/* Hàng 3: 2 ô input dạng number */}
