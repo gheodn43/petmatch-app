@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import TabPets from '@/components/pet/tabpets';
 import { PetOverviewDto } from '@/app/model/pet';
-import { dbPet, addSamplePetsToDb} from '@/localDB/pet.db'; // Import Dexie database instance
+import { dbPet } from '@/localDB/pet.db'; // Import Dexie database instance
 
 export default function MainSection() {
   const [pets, setPets] = useState<PetOverviewDto[]>([]);
@@ -12,39 +12,32 @@ export default function MainSection() {
 
   useEffect(() => {
     const fetchPets = async () => {
-      //await addSamplePetsToDb();
-      try {
-        const localPets = await dbPet.pet.toArray();
-        if (localPets.length > 0) {
-          setPets(localPets);
+      const localPets = await dbPet.pet.toArray();
+      if (localPets.length > 0) {
+        setPets(localPets);
+      } else {
+        const response = await fetch('/api/pet/getMyPets');
+        if (response.ok) {
+          const data = await response.json();
+          setPets(data.pets);
+          await dbPet.pet.bulkAdd(data.pets);
+        } else if (response.status === 401) {
+          setError('Unauthorized. Please login again.');
+        } else if (response.status === 404) {
+          setIsNotFound(true);
+        } else if (response.status === 500) {
+          setError('Internal server error. Please try again later.');
         } else {
-          const response = await fetch('/api/pet/getMyPets');
-          if (response.ok) {
-            const data = await response.json();
-            setPets(data.pets);
-            await dbPet.pet.bulkAdd(data.pets);
-          } else if (response.status === 401) {
-            setError('Unauthorized. Please login again.');
-          } else if (response.status === 404) {
-            setIsNotFound(true);
-          } else if (response.status === 500) {
-            setError('Internal server error. Please try again later.');
-          } else {
-            setError('An unexpected error occurred.');
-          }
+          setError('An unexpected error occurred.');
         }
-      } catch (err) {
-        console.error('Fetch error:', err);
-        setError('Network error. Please check your connection.');
       }
     };
-
     fetchPets();
   }, []);
 
   return (
     <div className=''>
-      <TabPets pets={pets} /> 
+      <TabPets pets={pets} />
       {error ? (
         <p>{error}</p>
       ) : isNotFound ? (

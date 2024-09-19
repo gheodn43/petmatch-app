@@ -64,7 +64,7 @@ export class PetOverviewDto {
         this.pet_name = data.pet_name;
         this.pet_type = data.pet_type;
         this.pet_species = data.pet_species;
-        this.pet_image = data.pet_images.slice(0, 1);
+        this.pet_image = data.pet_image;
         this.pet_gender = data.pet_gender;
         this.pet_pricing = data.pet_pricing;
         this.pet_status = data.pet_status;

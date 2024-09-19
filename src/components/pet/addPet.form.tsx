@@ -115,7 +115,6 @@ export default function AddPetForm() {
                 },
             });
             const petOverview: PetOverviewDto = response.data;
-            console.log('Pet created successfully:', petOverview);
             await dbPet.pet.put(petOverview);
             router.push('/home')
         } catch (error) {

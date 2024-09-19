@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
                 amount = 3900;
                 break;
             case 'Gold':
-                amount = 4900;
+                amount = 10000;
                 break;
             case 'Premium':
                 amount = 5900;
@@ -35,7 +35,6 @@ export async function POST(req: NextRequest) {
             cancelUrl: `${DOMAIN}/membership-pkgs`
         };
 
-        // Tạo liên kết thanh toán
         let paymentLinkResponse;
         try {
             paymentLinkResponse = await PayOS.createPaymentLink(body);
