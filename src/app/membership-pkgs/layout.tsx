@@ -1,5 +1,6 @@
 
 import React from "react";
+import LoginedHeader from "@/components/headers/loginedHeader";
 export default function SideLayout({
     children, 
 }: {
@@ -7,6 +8,7 @@ export default function SideLayout({
 }) {
     return (
         <>
+        <LoginedHeader/>
             {children}
         </>
     );

@@ -85,5 +85,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/', '/home', '/signin'],
+  matcher: ['/', '/home', '/signin', '/membership-pkgs/:path*', '/pet/:path*']
 };
