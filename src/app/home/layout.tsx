@@ -1,5 +1,6 @@
-'use client'
+'use client';
 import React, { useState } from 'react';
+import { UserProvider } from '@/providers/UserContext'; // Import UserProvider từ file đã tạo
 
 export default function MainPageLayout({ 
     children, side, main
@@ -29,19 +30,21 @@ export default function MainPageLayout({
     };
 
     return (
-        <div className="flex h-screen">
-            {children}
-            <div className="flex-none bg-primary" style={{ width: `${sideWidth}%` }}>
-                {side}
+        <UserProvider>
+            <div className="flex h-screen">
+                {children}
+                <div className="flex-none bg-primary" style={{ width: `${sideWidth}%` }}>
+                    {side}
+                </div>
+                <div
+                    className="w-[2px] bg-tertiary cursor-col-resize"
+                    onMouseDown={handleMouseDown}
+                    style={{ height: '100%' }}
+                ></div>
+                <div className="flex-1 bg-white">
+                    {main}
+                </div>
             </div>
-            <div
-                className="w-[2px] bg-tertiary cursor-col-resize"
-                onMouseDown={handleMouseDown}
-                style={{ height: '100%' }}
-            ></div>
-            <div className="flex-1 bg-white">
-                {main}
-            </div>
-        </div>
+        </UserProvider>
     );
 }
