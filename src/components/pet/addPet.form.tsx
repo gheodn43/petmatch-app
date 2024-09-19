@@ -123,12 +123,12 @@ export default function AddPetForm() {
     };
 
     return (
-        <div className="flex justify-center items-center">
+        <div className="flex justify-center items-center h-screen">
             <div className="w-full max-w-2xl p-6">
-                <h1 className="text-2xl font-bold mb-6">Thiết lập hồ sơ thú cưng</h1>
-                <form className="space-y-6">
+                <h1 className="text-[#FFC629] font-black font-sans tracking-[5px] text-xl flex items-center justify-center">Thiết lập hồ sơ thú cưng</h1>
+                <form className="space-y-6 mt-10">
                     {/* Hàng 1: 2 ô input dạng select-option */}
-                    <div className="flex space-x-4">
+                    <div className="flex space-x-4 text-gray-900">
                         <select name="petType" className="flex-1 p-2 border border-gray-300 rounded" onChange={handleInputChange} value={petInfo.petType}>
                             <option value="" disabled hidden>Chọn loại thú cưng</option>
                             {petTypeOptions.map(({ label }) => (
@@ -144,16 +144,16 @@ export default function AddPetForm() {
                         </select>
                     </div>
 
-                    <input name="petName" type="text" placeholder="Tên thú cưng" className="w-full p-2 border border-gray-300 rounded" onChange={handleInputChange} />
+                    <input name="petName" type="text" placeholder="Tên thú cưng" className="w-full p-2 border border-gray-300 rounded text-gray-900" onChange={handleInputChange} />
 
                     {/* Hàng 3: 2 ô input dạng number */}
                     <div className="flex space-x-4">
-                        <input name="petAge" type="number" placeholder="Tuổi" className="flex-1 p-2 border border-gray-300 rounded" onChange={handleInputChange} />
+                        <input name="petAge" type="number" placeholder="Tuổi" className="flex-1 p-2 border border-gray-300 rounded text-gray-900" onChange={handleInputChange} />
                         <input name="birthCount" type="number" placeholder="Số lần" className="flex-1 p-2 border border-gray-300 rounded" onChange={handleInputChange} />
                     </div>
 
                     {/* Hàng 4: chọn giới tính và ô input text */}
-                    <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-4 text-gray-900">
                         <div className="flex space-x-4">
                             <label className="flex items-center justify-center">
                                 <input type="radio" name="gender" value="Male" checked={petInfo.gender === "Male"} onChange={() => handleGenderChange("Male")} />
@@ -178,10 +178,10 @@ export default function AddPetForm() {
                         )}
                     </div>
 
-                    <input name="images" type="file" accept=".png, .jpg, .jpeg" multiple className="w-full p-2 border border-gray-300 rounded" onChange={handleImageChange} />
+                    <input name="images" type="file" accept=".png, .jpg, .jpeg" multiple className="w-full p-2 border border-gray-300 rounded text-gray-900" onChange={handleImageChange} />
                     <div className="mt-2">
                         {petInfo.images.map((image, index) => (
-                            <div key={index} className="relative inline-block mr-4">
+                            <div key={index} className="relative inline-block mr-4 text-gray-900">
                                 <img
                                     src={URL.createObjectURL(image)}
                                     alt={`Pet Image ${index + 1}`}
@@ -197,7 +197,7 @@ export default function AddPetForm() {
                             </div>
                         ))}
                     </div>
-                    <input name="certificates" type="file" accept=".png, .jpg, .jpeg, .pdf"  multiple className="w-full p-2 border border-gray-300 rounded" onChange={handleCertificateChange} />
+                    <input name="certificates" type="file" accept=".png, .jpg, .jpeg, .pdf"  multiple className="w-full p-2 border border-gray-300 rounded text-gray-900" onChange={handleCertificateChange} />
                     <div className="mt-2">
                         {petInfo.certificates.map((image, index) => (
                             <div key={index} className="relative inline-block mr-4">
@@ -216,7 +216,7 @@ export default function AddPetForm() {
                             </div>
                         ))}
                     </div>
-                    <Button onClick={handleSubmit} className="w-full p-2 border border-gray-300 rounded"> Tạo</Button>
+                    <Button onClick={handleSubmit} className="w-full p-2 border border-gray-300 rounded bg-gradient-to-r from-[#FFC300] to-[#FEDF79] text-black font-semibold text-2cl"> Tạo</Button>
                 </form>
             </div>
         </div>
