@@ -34,6 +34,7 @@ export async function POST(req: Request) {
     };
 
     const { Items } = await dynamoDB.send(new QueryCommand(queryParams));
+    console.log(Items)
     let user_id;
 
     if (Items && Items.length > 0) {

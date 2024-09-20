@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { DynamoDBClient, GetItemCommand, PutItemCommand, QueryCommand, UpdateItemCommand } from '@aws-sdk/client-dynamodb';
 import { getUserIdFromCookie } from '@/utils/authUtils';
+import { MatchedItem } from '@/app/model/petMatchedItem';
 
 const dynamoDB = new DynamoDBClient({});
 
@@ -44,7 +45,6 @@ async function checkIfAlreadyLiked(petAId: string, petBId: string) {
     }
 }
 
-// Hàm lưu petBId vào pet_liked của petAId
 async function saveLike(petAId: string, petBId: string, petAOwnerId: string) {
     console.log('Saving like for petA:', petAId, 'petB:', petBId, 'userId:', petAOwnerId);
 
@@ -69,7 +69,6 @@ async function saveLike(petAId: string, petBId: string, petAOwnerId: string) {
         throw error;
     }
 }
-
 
 async function createChatRoom(petAId: string, petAAavatar: string, petAName: string, ownerAId: string, petBId: string) {
     const roomId = `${petAId}_${petBId}_${Date.now()}`;
@@ -127,7 +126,17 @@ export async function POST(req: NextRequest, { params }: { params: { petAId: str
         if (isMatched) {
             const roomId = await createChatRoom(petAId, petAAavatar, petAName, ownerAId, petBId);
             await enableChatForpets(petAId, petBId, roomId);
-            return NextResponse.json({ message: 'Match thành công, phòng chat đã được mở!', roomId });
+
+            // Tạo đối tượng MatchedItem thay vì trả về roomId
+            const matchedItem = new MatchedItem({
+                room_id: roomId,
+                partner_id: petBId,
+                partner_avatar: petBAvatar,
+                partner_name: petBName,
+                created_at: new Date().toISOString(),
+            });
+
+            return NextResponse.json({ message: 'Match thành công, phòng chat đã được mở!', matchedItem });
         } else {
             await saveLike(petAId, petBId, ownerAId);
             return NextResponse.json({ message: 'pet A đã like pet B, chờ pet B like lại để match.' });

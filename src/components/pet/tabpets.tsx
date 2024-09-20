@@ -65,13 +65,13 @@ const TabPets: React.FC<TabPetsProps> = ({ pets }) => {
         return (
           <div
             key={pet.pet_id}
-            className={`flex flex-col items-center cursor-pointer ${isSelected ? 'border-2 border-yellow-500' : ''}`}
+            className={`flex flex-col items-center cursor-pointer ${isSelected ? 'border-4 rounded-full border-yellow-500' : ''}`}
             onClick={() => handleSelectPet(pet)}
           >
             <img
               src={pet.pet_image}
               alt={pet.pet_name}
-              className="h-10 w-10 rounded-full object-cover"
+              className={`h-10 w-10 rounded-full object-cover `}
             />
           </div>
         );

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { DynamoDBClient, QueryCommand } from '@aws-sdk/client-dynamodb';
 import { getUserIdFromCookie } from '@/utils/authUtils';
+import { MatchedItem } from '@/app/model/petMatchedItem';
 
 const dynamoDB = new DynamoDBClient({});
 
@@ -34,7 +35,7 @@ export async function GET(req: NextRequest) {
             dynamoDB.send(new QueryCommand(paramsB))
         ]);
 
-        const matched: Array<{ room_id: string; partner_id: string; partner_avatar: string; created_at: string; }> = [];
+        const matched: Array<MatchedItem> = [];
         const processedRoomIds = new Set<string>(); // Set để lưu room_id đã xử lý
 
         // Xử lý dữ liệu từ ownerA
@@ -46,7 +47,8 @@ export async function GET(req: NextRequest) {
                     matched.push({
                         room_id: roomId,
                         partner_id: item.ownerB_id.S!, // Đảm bảo không phải undefined
-                        partner_avatar: item.petB_avatar.S!, // Đảm bảo không phải undefined
+                        partner_avatar: item.petB_avatar.S!,
+                        partner_name: item.petB_name.S!,  // Đảm bảo không phải undefined
                         created_at: item.created_at.S! // Đảm bảo không phải undefined
                     });
                     processedRoomIds.add(roomId); // Đánh dấu room_id đã xử lý
@@ -62,7 +64,8 @@ export async function GET(req: NextRequest) {
                     matched.push({
                         room_id: roomId,
                         partner_id: item.ownerA_id.S!, // Đảm bảo không phải undefined
-                        partner_avatar: item.petA_avatar.S!, // Đảm bảo không phải undefined
+                        partner_avatar: item.petA_avatar.S!,
+                        partner_name: item.petA_name.S!, // Đảm bảo không phải undefined
                         created_at: item.created_at.S! // Đảm bảo không phải undefined
                     });
                     processedRoomIds.add(roomId); // Đánh dấu room_id đã xử lý

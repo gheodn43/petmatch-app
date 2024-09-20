@@ -34,13 +34,29 @@ const TestPage = () => {
 
         const data = await res.json();
         setResponse(data);
+
+        if (data?.matchedItem) {
+            const { room_id, partner_id, partner_avatar, partner_name, created_at } = data.matchedItem;
+
+            try {
+                await dbPet.matched.add({
+                    room_id,
+                    partner_id,
+                    partner_avatar,
+                    partner_name,
+                    created_at
+                });
+                console.log('Matched item đã được thêm vào dbPet.matched');
+            } catch (error) {
+                console.error('Lỗi khi thêm matched item vào db:', error);
+            }
+        }
     };
 
     return (
         <div className="flex flex-col items-center p-6 bg-gray-100 min-h-screen">
             <h1 className="text-3xl font-bold mb-4 text-center text-secondary">PETMATCH TEST</h1>
             
-            {/* Hiển thị thông tin pet đã chọn */}
             {petAInfo.pet_id && (
                 <div className="mb-4 text-center flex flex-col justify-center items-center">
                     <img

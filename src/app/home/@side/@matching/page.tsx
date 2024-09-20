@@ -2,13 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { dbPet } from '@/localDB/pet.db'; 
-
-interface MatchedItem {
-    room_id: string;
-    partner_id: string;
-    partner_avatar: string;
-    created_at: string;
-}
+import { MatchedItem } from '@/app/model/petMatchedItem';
 
 const MatchingSection: React.FC = () => {
     const [matched, setMatched] = useState<MatchedItem[]>([]);
@@ -72,7 +66,7 @@ const MatchingSection: React.FC = () => {
                             alt="Partner Avatar" 
                             className="w-24 h-24 rounded-full mb-2" 
                         />
-                        <h3 className="font-bold text-lg">{match.partner_id}</h3>
+                        <h3 className="font-bold text-lg">{match.partner_name}</h3>
                         <p className="text-gray-600">{getRelativeTime(match.created_at)}</p>
                     </div>
                 </div>
