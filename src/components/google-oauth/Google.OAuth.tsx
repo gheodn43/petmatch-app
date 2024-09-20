@@ -1,6 +1,7 @@
 'use client';
 import { GoogleLogin, CredentialResponse } from '@react-oauth/google';
 import { useRouter } from 'next/navigation';
+import { dbPet } from '@/localDB/pet.db';
 
 const GoogleOAuth: React.FC = () => {
     const router = useRouter();
@@ -8,7 +9,7 @@ const GoogleOAuth: React.FC = () => {
     const handleSuccess = async (credentialResponse: CredentialResponse) => {
         if (credentialResponse?.credential) {
             try {
-                // Gửi credential đến API
+                await dbPet.pet.clear();
                 const response = await fetch('/api/auth/login', {
                     method: 'POST',
                     headers: {

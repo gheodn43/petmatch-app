@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { Jomhuria } from 'next/font/google'
+import { config } from '@fortawesome/fontawesome-svg-core';
+import '@fortawesome/fontawesome-svg-core/styles.css';
 import "./globals.css";
+config.autoAddCss = false;
 const jomhuria = Jomhuria({
   weight: ['400'],
   style: ['normal'],
