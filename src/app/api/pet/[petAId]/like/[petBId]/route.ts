@@ -6,6 +6,7 @@ const dynamoDB = new DynamoDBClient({});
 
 let petBAvatar = '';
 let petBOwnerId = '';
+let petBName = '';
 
 async function checkIfAlreadyLiked(petAId: string, petBId: string) {
     console.log('Checking if petA has already liked petB...');
@@ -16,7 +17,7 @@ async function checkIfAlreadyLiked(petAId: string, petBId: string) {
         ExpressionAttributeValues: {
             ':petBId': { S: petBId }
         },
-        ProjectionExpression: 'pet_liked, pet_images, user_id'
+        ProjectionExpression: 'pet_liked, pet_images, pet_name, user_id'
     };
 
     try {
@@ -31,7 +32,8 @@ async function checkIfAlreadyLiked(petAId: string, petBId: string) {
                 petBAvatar = item.pet_images.L[0].S ?? '';
             }
             petBOwnerId = item?.user_id?.S ?? '';
-            console.log('PetB Avatar:', petBAvatar, 'PetB Owner ID:', petBOwnerId);
+            petBName = item?.pet_name?.S ?? '';
+            console.log('PetB Avatar:', petBAvatar,'PetB name:', petBName, 'PetB Owner ID:', petBOwnerId);
             return petLiked.includes(petAId);
         } else {
             return false;
@@ -69,7 +71,7 @@ async function saveLike(petAId: string, petBId: string, petAOwnerId: string) {
 }
 
 
-async function createChatRoom(petAId: string, petAAavatar: string, ownerAId: string, petBId: string) {
+async function createChatRoom(petAId: string, petAAavatar: string, petAName: string, ownerAId: string, petBId: string) {
     const roomId = `${petAId}_${petBId}_${Date.now()}`;
     const createdAt = new Date().toISOString();
     const lastMessageAt = createdAt; 
@@ -79,9 +81,11 @@ async function createChatRoom(petAId: string, petAAavatar: string, ownerAId: str
         Item: {
             room_id: { S: roomId },
             petA_id: { S: petAId },
+            petA_name: { S: petAName },
             ownerA_id: { S: ownerAId },
             petB_id: { S: petBId },
             ownerB_id: { S: petBOwnerId },
+            petB_name: { S: petBName },
             created_at: { S: createdAt },
             last_message_at: { S: lastMessageAt },
             petA_avatar: { S: petAAavatar },
@@ -112,13 +116,16 @@ export async function POST(req: NextRequest, { params }: { params: { petAId: str
         if (userIdOrResponse instanceof NextResponse) return userIdOrResponse;
         const ownerAId = userIdOrResponse;
 
-        const petAAavatar = 'https://petmatch-storage.s3.ap-southeast-1.amazonaws.com/1726730136393_IMG_4242.JPG';
+        const { pet_name, pet_image } = await req.json();
+
+        const petAAavatar = pet_image;
+        const petAName = pet_name;
 
         const isMatched = await checkIfAlreadyLiked(petAId, petBId);
         console.log('Match status:', isMatched);
 
         if (isMatched) {
-            const roomId = await createChatRoom(petAId, petAAavatar, ownerAId, petBId);
+            const roomId = await createChatRoom(petAId, petAAavatar, petAName, ownerAId, petBId);
             await enableChatForpets(petAId, petBId, roomId);
             return NextResponse.json({ message: 'Match thành công, phòng chat đã được mở!', roomId });
         } else {
