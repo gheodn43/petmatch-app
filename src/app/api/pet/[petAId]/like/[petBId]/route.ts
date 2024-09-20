@@ -12,11 +12,18 @@ let petBAvatar = '';
 let petBOwnerId = '';
 let petBName = '';
 
+interface PetItem {
+    pet_liked?: { L: { S: string }[] };
+    pet_images?: { L: { S: string }[] };
+    pet_name?: { S: string };
+    user_id?: { S: string };
+}
+
 async function checkIfAlreadyLiked(petAId: string, petBId: string) {
     console.log('Checking if petA has already liked petB...');
     const params = {
         TableName: 'petmatch-pets',
-        IndexName: 'pet_id-index', 
+        IndexName: 'pet_id-index',
         KeyConditionExpression: 'pet_id = :petBId',
         ExpressionAttributeValues: {
             ':petBId': { S: petBId }
@@ -29,14 +36,16 @@ async function checkIfAlreadyLiked(petAId: string, petBId: string) {
         console.log('Query result:', data);
 
         if (data.Items && data.Items.length > 0) {
-            const item = data.Items[0]; 
-            const petLiked = item?.pet_liked?.L ? item.pet_liked.L.map((item: any) => item.S) : [];
+            const item: PetItem = data.Items[0] as PetItem;
+            const petLiked = item?.pet_liked?.L?.map((likedItem) => likedItem.S) ?? [];
+            
             if (item?.pet_images?.L && item.pet_images.L.length > 0) {
                 petBAvatar = item.pet_images.L[0].S ?? '';
             }
             petBOwnerId = item?.user_id?.S ?? '';
             petBName = item?.pet_name?.S ?? '';
-            console.log('PetB Avatar:', petBAvatar,'PetB name:', petBName, 'PetB Owner ID:', petBOwnerId);
+            
+            console.log('PetB Avatar:', petBAvatar, 'PetB name:', petBName, 'PetB Owner ID:', petBOwnerId);
             return petLiked.includes(petAId);
         } else {
             return false;
@@ -46,6 +55,7 @@ async function checkIfAlreadyLiked(petAId: string, petBId: string) {
         throw error;
     }
 }
+
 
 async function saveLike(petAId: string, petBId: string, petAOwnerId: string) {
     console.log('Saving like for petA:', petAId, 'petB:', petBId, 'userId:', petAOwnerId);
