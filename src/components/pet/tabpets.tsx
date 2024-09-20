@@ -34,10 +34,6 @@ const TabPets: React.FC<TabPetsProps> = ({ pets }) => {
     router.push('/pet/add-pet');
   };
 
-  const handleChangePetView = (pet_id: string) => {
-    console.log(`View details of pet with id: ${pet_id}`);
-  };
-
   const handleSelectPet = async (pet: PetOverviewDto) => {
     // Xóa pet cũ trong bảng selected
     if (selectedPets.length > 0) {

@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, ChangeEvent, MouseEvent } from "react";
+import { useState, useEffect, ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@headlessui/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -103,10 +103,10 @@ export default function AddPetForm() {
             formData.append("birthCount", petInfo.birthCount);
             formData.append("gender", petInfo.gender);
             formData.append("pricing", petInfo.pricing);
-            petInfo.images.forEach((image, index) => {
+            petInfo.images.forEach((image) => {
                 formData.append(`images`, image);
             });
-            petInfo.certificates.forEach((certificate, index) => {
+            petInfo.certificates.forEach((certificate) => {
                 formData.append(`certificates`, certificate);
             });
             const response = await axios.post('/api/pet/create', formData, {

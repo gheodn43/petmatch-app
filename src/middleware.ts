@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { SignJWT, jwtVerify, decodeJwt, JWTPayload } from 'jose';
+import { SignJWT, jwtVerify, decodeJwt } from 'jose';
 import cookie from 'cookie';
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
@@ -31,7 +31,6 @@ export async function middleware(request: NextRequest) {
   if (accessToken) {
     try {
       // Xác thực token
-      const { payload } = await jwtVerify(accessToken, new TextEncoder().encode(JWT_SECRET));
       if (url.pathname === '/') {
         return NextResponse.redirect(new URL('/home', request.url));
       }
