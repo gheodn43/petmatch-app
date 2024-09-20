@@ -25,3 +25,4 @@ export async function getUserIdFromCookie(req: NextRequest): Promise<string | Ne
         return NextResponse.json({ message: 'Invalid or expired access token.' }, { status: 401 });
     }
 }
+
