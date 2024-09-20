@@ -38,13 +38,13 @@ async function checkIfAlreadyLiked(petAId: string, petBId: string) {
         if (data.Items && data.Items.length > 0) {
             const item: PetItem = data.Items[0] as PetItem;
             const petLiked = item?.pet_liked?.L?.map((likedItem) => likedItem.S) ?? [];
-            
+
             if (item?.pet_images?.L && item.pet_images.L.length > 0) {
                 petBAvatar = item.pet_images.L[0].S ?? '';
             }
             petBOwnerId = item?.user_id?.S ?? '';
             petBName = item?.pet_name?.S ?? '';
-            
+
             console.log('PetB Avatar:', petBAvatar, 'PetB name:', petBName, 'PetB Owner ID:', petBOwnerId);
             return petLiked.includes(petAId);
         } else {
@@ -85,7 +85,7 @@ async function saveLike(petAId: string, petBId: string, petAOwnerId: string) {
 async function createChatRoom(petAId: string, petAAavatar: string, petAName: string, ownerAId: string, petBId: string) {
     const roomId = `${petAId}_${petBId}_${Date.now()}`;
     const createdAt = new Date().toISOString();
-    const lastMessageAt = createdAt; 
+    const lastMessageAt = createdAt;
 
     const params = {
         TableName: 'petmatch-chat-room',
@@ -132,7 +132,11 @@ async function notifyPetB(roomId: string, petAId: string, petAAavatar: string, p
     }
 }
 
-export const POST = async (req: NextRequest, { params }: { params: { petAId: string, petBId: string } }) => {
+// Định nghĩa kiểu trả về cho hàm POST
+export async function POST(
+    req: NextRequest,
+    { params }: { params: { petAId: string; petBId: string } }
+): Promise<NextResponse> {
     const { petAId, petBId } = params;
     console.log('Starting POST request:', petAId, petBId);
 
@@ -168,6 +172,7 @@ export const POST = async (req: NextRequest, { params }: { params: { petAId: str
         }
     } catch (error) {
         console.error('Error in POST handler:', error);
-        return NextResponse.json({ message: 'Có lỗi xảy ra'}, { status: 500 });
+        return NextResponse.json({ message: 'Có lỗi xảy ra' }, { status: 500 });
     }
-};
+}
+
