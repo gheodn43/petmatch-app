@@ -1,4 +1,4 @@
-
+import { Reviewing } from "./review";
 export const PET_STATUS = {
     ACTIVE: 'active',
     HIBERNATING: 'hibernating',   
@@ -19,9 +19,12 @@ export interface Pet {
     pet_status: string;
     pet_liked: string[];
     pet_unliked: string[];
-    pet_matched: string[]               
+    pet_matched: string[];
+    pet_star: number; 
+    pet_review: Reviewing[];     
 }
 export class CreatePetDto {
+    user_id: string;
     pet_type: string;
     pet_species: string;
     pet_name: string;
@@ -32,7 +35,11 @@ export class CreatePetDto {
     pet_images: string[];
     pet_certificates: string[];
     pet_status: string;
-    user_id: string;
+    pet_liked: string[];
+    pet_unliked: string[];
+    pet_matched: string[];
+    pet_star: number; 
+    pet_review: Reviewing[];
 
     constructor(data: any) {
         this.user_id = data.user_id;
@@ -46,11 +53,15 @@ export class CreatePetDto {
         this.pet_images = data.pet_images || [];
         this.pet_certificates = data.pet_certificates || [];
         this.pet_status = data.pet_status || PET_STATUS.ACTIVE;
-        
+        this.pet_liked = data.pet_liked || [];
+        this.pet_unliked = data.pet_unliked || [];
+        this.pet_matched = data.pet_matched || [];
+        this.pet_star = data.pet_star || 0;
+        this.pet_review = data.pet_review || [];
     }
 }
 
-// DTO cho overview của pet
+
 export class PetOverviewDto {
     pet_id: string;
     pet_name: string;
