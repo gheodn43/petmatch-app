@@ -35,6 +35,7 @@ export async function POST(request: NextRequest) {
         const uploadedImages: string[] = [];
         const uploadCertificates: string[] = [];
 
+        // Upload images
         for (const image of petInfo.images) {
             const buffer = Buffer.from(await image.arrayBuffer());
             const fileName = `${Date.now()}_${image.name}`;
@@ -43,6 +44,7 @@ export async function POST(request: NextRequest) {
             uploadedImages.push(uploadedFileName);
         }
         
+        // Upload certificates
         for (const certificate of petInfo.certificates) {
             const buffer = Buffer.from(await certificate.arrayBuffer());
             const fileName = `${Date.now()}_${certificate.name}`;
@@ -51,6 +53,7 @@ export async function POST(request: NextRequest) {
             uploadCertificates.push(uploadCertificate);
         }
 
+        // Khởi tạo CreatePetDto với các trường rỗng
         const petDto = new CreatePetDto({
             user_id,
             pet_type: petInfo.petType,
@@ -63,10 +66,15 @@ export async function POST(request: NextRequest) {
             pet_images: uploadedImages,
             pet_certificates: uploadCertificates,
             pet_status: 'active',
+            pet_liked: [],
+            pet_unliked: [],
+            pet_matched: [],
+            pet_star: 0,
+            pet_review: []
         });
 
-        // Prepare DynamoDB request parameters
-        const pet_id = uuidv4(); // Generate unique pet_id
+        // Chuẩn bị tham số cho DynamoDB
+        const pet_id = uuidv4(); // Tạo pet_id duy nhất
         const params = {
             TableName: 'petmatch-pets',
             Item: {
@@ -81,25 +89,31 @@ export async function POST(request: NextRequest) {
                 pet_pricing: { S: petDto.pet_pricing },
                 pet_images: { L: petDto.pet_images.map(img => ({ S: img })) },
                 pet_certificates: { L: petDto.pet_certificates.map(cert => ({ S: cert })) },
-                pet_status: { S: petDto.pet_status }
+                pet_status: { S: petDto.pet_status },
+                pet_liked: { L: [] },   // Trống
+                pet_unliked: { L: [] }, // Trống
+                pet_matched: { L: [] }, // Trống
+                pet_star: { N: '0' },   // Mặc định là 0
+                pet_review: { L: [] }   // Trống
             }
         };
 
-        // Insert item into DynamoDB
+        // Thêm thú cưng mới vào DynamoDB
         await dynamoDB.send(new PutItemCommand(params));
 
-        // Create PetOverviewDto for response
+        // Tạo PetOverviewDto để trả về phản hồi
         const petOverviewDto = new PetOverviewDto({
             pet_id,
             pet_name: petDto.pet_name,
             pet_type: petDto.pet_type,
             pet_species: petDto.pet_species,
-            pet_images: petDto.pet_images,
+            pet_image: petDto.pet_images[0], // Chọn hình ảnh đầu tiên
             pet_gender: petDto.pet_gender,
             pet_pricing: petDto.pet_pricing,
             pet_status: petDto.pet_status,
         });
-    console.log(petOverviewDto);
+
+        console.log(petOverviewDto);
         return NextResponse.json(petOverviewDto, { status: 200 });
     } catch (error) {
         console.error("Error uploading files or creating pet:", error);
