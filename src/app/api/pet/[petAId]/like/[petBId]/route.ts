@@ -132,7 +132,7 @@ async function notifyPetB(roomId: string, petAId: string, petAAavatar: string, p
     }
 }
 
-export async function POST(req: NextRequest, { params }: { params: { petAId: string, petBId: string } }) {
+export const POST = async (req: NextRequest, { params }: { params: { petAId: string, petBId: string } }) => {
     const { petAId, petBId } = params;
     console.log('Starting POST request:', petAId, petBId);
 
@@ -153,7 +153,6 @@ export async function POST(req: NextRequest, { params }: { params: { petAId: str
             const roomId = await createChatRoom(petAId, petAAavatar, petAName, ownerAId, petBId);
             await notifyPetB(roomId, petAId, petAAavatar, petAName, petBId);
 
-            // Tạo đối tượng MatchedItem thay vì trả về roomId
             const matchedItem = new MatchedItem({
                 room_id: roomId,
                 partner_id: petBId,
@@ -171,4 +170,4 @@ export async function POST(req: NextRequest, { params }: { params: { petAId: str
         console.error('Error in POST handler:', error);
         return NextResponse.json({ message: 'Có lỗi xảy ra'}, { status: 500 });
     }
-}
+};
