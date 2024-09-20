@@ -1,5 +1,8 @@
 import { getUserIdFromCookie } from '@/utils/authUtils';
 import { NextResponse, NextRequest } from 'next/server';
+import { DynamoDBClient, UpdateItemCommand } from '@aws-sdk/client-dynamodb';
+
+const dynamoDB = new DynamoDBClient({});
 
 export async function POST(request: NextRequest) {
   try {
@@ -7,35 +10,59 @@ export async function POST(request: NextRequest) {
     if (userIdOrResponse instanceof NextResponse) return userIdOrResponse;
     const user_id = userIdOrResponse;
 
-    const { orderCode } = await request.json();
-    if (!orderCode) {
-      return NextResponse.json({ message: 'orderCode is required' }, { status: 400 });
+    const paymentInfoCookie = request.cookies.get('payment_info');
+    if (!paymentInfoCookie) {
+      return NextResponse.json({ message: 'Thông tin thanh toán không tồn tại.' }, { status: 400 });
     }
-    console.log('Received orderCode:', orderCode);
 
+    const paymentInfo = JSON.parse(paymentInfoCookie.value);
+    const { orderCode, packageName } = paymentInfo;
 
-    //const { packageName } = paymentInfo;
-    const packageName = 'Premium';
-    // let newRole;
-    // switch (packageName) {
-    //   case 'VIP':
-    //     newRole = 'VIP';
-    //     break;
-    //   case 'Gold':
-    //     newRole = 'Gold';
-    //     break;
-    //   case 'Premium':
-    //     newRole = 'Premium';
-    //     break;
-    //   default:
-    //     return NextResponse.json({ message: 'packageName không hợp lệ' }, { status: 400 });
-    // }
+    if (!orderCode || !packageName) {
+      return NextResponse.json({ message: 'Dữ liệu thanh toán không hợp lệ.' }, { status: 400 });
+    }
 
-   // console.log('New Role:', newRole);
+    // Xử lý role
+    const userRole = packageName === 'VIP' ? 'VIP' : 'Premium';
+    const expiryDate = new Date();
 
-    return NextResponse.json({ message: 'Role updated successfully' }, { status: 200 });
+    // Cộng thêm thời gian theo gói dịch vụ
+    if (packageName === 'VIP') {
+      expiryDate.setMonth(expiryDate.getMonth() + 1); // Cộng 1 tháng
+    } else if (packageName === 'Premium') {
+      expiryDate.setMonth(expiryDate.getMonth() + 6); // Cộng 6 tháng
+    }
+
+    // Cập nhật user role và ngày hết hạn trong DynamoDB
+    const updateParams = {
+      TableName: 'petmatch-users',
+      Key: { user_id: { S: user_id } },
+      UpdateExpression: 'SET user_role = :role, expiry_date = :expiry',
+      ExpressionAttributeValues: {
+        ':role': { S: userRole },
+        ':expiry': { S: expiryDate.toISOString() }
+      }
+    };
+
+    await dynamoDB.send(new UpdateItemCommand(updateParams));
+    console.log(updateParams)
+    // Cập nhật cookie user_info chỉ với user_role
+    const userInfoCookie = request.cookies.get('user_info');
+    if (userInfoCookie) {
+      const userInfo = JSON.parse(userInfoCookie.value);
+      userInfo.user_role = userRole;
+      const response = NextResponse.json({ message: 'Cập nhật vai trò người dùng thành công.' }, { status: 200 });
+      response.cookies.set('user_info', JSON.stringify(userInfo), {
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 3600 * 24 * 7,
+        path: '/',
+      });
+      return response;
+    } else {
+      return NextResponse.json({ message: 'Thông tin người dùng không tồn tại trong cookie.' }, { status: 400 });
+    }
   } catch (error) {
     console.error('Error:', error);
-    return NextResponse.json({ message: 'Error updating role' }, { status: 500 });
+    return NextResponse.json({ message: 'Error updating role.' }, { status: 500 });
   }
 }

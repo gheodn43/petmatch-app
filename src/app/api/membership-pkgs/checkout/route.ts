@@ -9,29 +9,29 @@ export async function POST(req: NextRequest) {
         const user_id = userIdOrResponse;
         const DOMAIN = process.env.DOMAIN;
         const { package: packageName } = await req.json();
-        if (!['VIP', 'Gold', 'Premium'].includes(packageName)) {
+
+        if (!['VIP', 'Premium'].includes(packageName)) {
             return NextResponse.json({ error: 'Tên gói thành viên không khả dụng.' }, { status: 400 });
         }
+
         let amount;
         switch (packageName) {
             case 'VIP':
-                amount = 3900;
-                break;
-            case 'Gold':
                 amount = 10000;
                 break;
             case 'Premium':
-                amount = 5900;
+                amount = 20000;
                 break;
             default:
                 amount = 0;
                 break;
         }
+
         const body = {
             orderCode: Number(String(Date.now()).slice(-6)),
             amount: amount,
             description: `THANH TOAN GOI ${packageName}`,
-            returnUrl: `${DOMAIN}/home`,
+            returnUrl: `${DOMAIN}/membership-pkgs/payment-success`,
             cancelUrl: `${DOMAIN}/membership-pkgs`
         };
 
@@ -44,7 +44,16 @@ export async function POST(req: NextRequest) {
         }
 
         const paymentLink = paymentLinkResponse.checkoutUrl;
-        return NextResponse.json({ paymentLink }, { status: 200 });
+        const orderCode = paymentLinkResponse.orderCode;
+        const response = NextResponse.json({ paymentLink, orderCode, packageName }, { status: 200 });
+        response.cookies.set('payment_info', JSON.stringify({ orderCode, packageName }), {
+            httpOnly: false,
+            secure: process.env.NODE_ENV === 'production',
+            path: '/',
+            maxAge: 120,
+        });
+
+        return response;
     } catch (error) {
         console.error('Error:', error);
         return NextResponse.json({ message: 'Internal server error.' }, { status: 500 });

@@ -10,13 +10,12 @@ export default function MembershipPkgs() {
         try {
             const response = await axios.post('/api/membership-pkgs/checkout', { package: packageName });
             const checkoutLink: string = response.data.paymentLink;
-            console.log(checkoutLink)
+            const orderCode: string = response.data.orderCode;
             router.push(checkoutLink);
         } catch (error) {
             console.error('Đã xảy ra lỗi khi gọi API thanh toán:', error);
         }
     };
-
     return (
         <div className="flex flex-col items-center p-2 h-screen space-y-6">
             <div className='flex flex-col items-center justify-evenly xl:flex-row space-y-4 xl:space-y-0 xl:space-x-6 w-full h-full px-20'>
@@ -35,12 +34,6 @@ export default function MembershipPkgs() {
                     <span className='text-gray-800 font-extralight text-xs italic'>
                     *Dành cho những ai muốn bắt đầu trải nghiệm cơ bản, tìm kiếm đối tác thú cưng miễn phí!
                     </span>
-                    {/* <button 
-                        className="mt-4 p-2 bg-gray-800 text-white rounded"
-                        onClick={() => handlePayment('VIP')}
-                    >
-                        Thanh toán
-                    </button> */}
                 </div>
                 <div className="flex flex-col p-10 w-full h-3/5 xl:w-[25%] bg-gradient-to-b from-[#FFF9E4] to-[#FFD151]  bg-opacity-50 border-4 border-gray-200 rounded-lg shadow-lg relative xl:bottom-[10%]">
                     <div className='flex items-center justify-center flex-col border-b-2 border-black rounded-sm'>

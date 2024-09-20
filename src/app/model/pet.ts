@@ -18,7 +18,8 @@ export interface Pet {
     pet_certificates: string[];     
     pet_status: string;
     pet_liked: string[];
-    pet_unliked: string[];                
+    pet_unliked: string[];
+    pet_matched: string[]               
 }
 export class CreatePetDto {
     pet_type: string;
@@ -45,6 +46,7 @@ export class CreatePetDto {
         this.pet_images = data.pet_images || [];
         this.pet_certificates = data.pet_certificates || [];
         this.pet_status = data.pet_status || PET_STATUS.ACTIVE;
+        
     }
 }
 
