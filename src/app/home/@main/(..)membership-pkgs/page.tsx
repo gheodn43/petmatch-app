@@ -10,7 +10,6 @@ export default function MembershipPkgs() {
         try {
             const response = await axios.post('/api/membership-pkgs/checkout', { package: packageName });
             const checkoutLink: string = response.data.paymentLink;
-            const orderCode: string = response.data.orderCode;
             router.push(checkoutLink);
         } catch (error) {
             console.error('Đã xảy ra lỗi khi gọi API thanh toán:', error);

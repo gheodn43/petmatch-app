@@ -6,7 +6,6 @@ export async function POST(req: NextRequest) {
     try {
         const userIdOrResponse = await getUserIdFromCookie(req);
         if (userIdOrResponse instanceof NextResponse) return userIdOrResponse;
-        const user_id = userIdOrResponse;
         const DOMAIN = process.env.DOMAIN;
         const { package: packageName } = await req.json();
 

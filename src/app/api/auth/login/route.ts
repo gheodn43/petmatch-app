@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import { DynamoDBClient, QueryCommand, PutItemCommand } from '@aws-sdk/client-dynamodb';
-import { SignJWT, jwtVerify, decodeJwt } from 'jose';
-import cookie from 'cookie';
+import { SignJWT, decodeJwt } from 'jose';
+
 
 const dynamoDB = new DynamoDBClient({});
 const JWT_SECRET = process.env.JWT_SECRET as string;

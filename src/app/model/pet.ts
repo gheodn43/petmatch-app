@@ -60,8 +60,6 @@ export class CreatePetDto {
         this.pet_review = data.pet_review || [];
     }
 }
-
-
 export class PetOverviewDto {
     pet_id: string;
     pet_name: string;
@@ -83,7 +81,6 @@ export class PetOverviewDto {
         this.pet_status = data.pet_status;
     }
 }
-
 export class PetDetailDto {
     pet_id: string;
     pet_name: string;

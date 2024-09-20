@@ -1,10 +1,9 @@
 //api/pet/[petAId]/like/[petBId]
 
 import { NextRequest, NextResponse } from 'next/server';
-import { DynamoDBClient, GetItemCommand, PutItemCommand, QueryCommand, UpdateItemCommand } from '@aws-sdk/client-dynamodb';
+import { DynamoDBClient, PutItemCommand, QueryCommand, UpdateItemCommand } from '@aws-sdk/client-dynamodb';
 import { getUserIdFromCookie } from '@/utils/authUtils';
 import { MatchedItem } from '@/app/model/petMatchedItem';
-import Pusher from 'pusher';
 import { pusherServer } from '@/lib/pusher';
 
 const dynamoDB = new DynamoDBClient({});
@@ -32,7 +31,6 @@ async function checkIfAlreadyLiked(petAId: string, petBId: string) {
         if (data.Items && data.Items.length > 0) {
             const item = data.Items[0]; 
             const petLiked = item?.pet_liked?.L ? item.pet_liked.L.map((item: any) => item.S) : [];
-            
             if (item?.pet_images?.L && item.pet_images.L.length > 0) {
                 petBAvatar = item.pet_images.L[0].S ?? '';
             }
