@@ -32,7 +32,6 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "Images are required." }, { status: 400 });
         }
         
-        // Upload images and certificates
         const uploadedImages: string[] = [];
         const uploadCertificates: string[] = [];
 
@@ -52,7 +51,6 @@ export async function POST(request: NextRequest) {
             uploadCertificates.push(uploadCertificate);
         }
 
-        // Create PetOverviewDto
         const petDto = new CreatePetDto({
             user_id,
             pet_type: petInfo.petType,

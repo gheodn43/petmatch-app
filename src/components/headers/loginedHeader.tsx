@@ -48,7 +48,7 @@ export default function LoginedHeader() {
                 <img
                     src="/images/logo-white.png"
                     alt="Logo"
-                    className="w-[50px] sm:w-[50px] md:w-[60px] lg:w-[70px]"
+                    className="w-[30px] sm:w-[30px] md:w-[40px] lg:w-[50px]"
                     onClick={handleToHome}
                 />
             </div>
