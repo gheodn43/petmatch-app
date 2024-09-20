@@ -3,7 +3,7 @@ import { useState, useEffect, ChangeEvent, MouseEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@headlessui/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faLock } from "@fortawesome/free-solid-svg-icons";
+import { faLock,faFile, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { PetOverviewDto } from "@/app/model/pet";
 import { dbPet} from '@/localDB/pet.db';
 import axios from 'axios';
@@ -123,7 +123,7 @@ export default function AddPetForm() {
     };
 
     return (
-        <div className="flex justify-center items-center h-screen">
+        <div className="flex justify-center items-start h-screen mt-20">
             <div className="w-full max-w-2xl p-6">
                 <h1 className="text-[#FFC629] font-black font-sans tracking-[5px] text-xl flex items-center justify-center">Thiết lập hồ sơ thú cưng</h1>
                 <form className="space-y-6 mt-10">
@@ -190,31 +190,34 @@ export default function AddPetForm() {
                                 <button
                                     type="button"
                                     onClick={() => handleRemoveImage(index)}
-                                    className="absolute top-0 right-0 p-1 bg-red-600 text-white rounded-full"
+                                    className="absolute -top-4 -right-4 bg-red-600 px-1 text-white rounded-full"
                                 >
                                     X
                                 </button>
                             </div>
                         ))}
                     </div>
-                    <input name="certificates" type="file" accept=".png, .jpg, .jpeg, .pdf"  multiple className="w-full p-2 border border-gray-300 rounded text-gray-900" onChange={handleCertificateChange} />
+                    <input name="certificates" type="file" accept=".png, .jpg, .jpeg, .pdf" multiple className="w-full p-2 border border-gray-300 rounded text-gray-900" onChange={handleCertificateChange} />
+
                     <div className="mt-2">
-                        {petInfo.certificates.map((image, index) => (
-                            <div key={index} className="relative inline-block mr-4">
-                                <img
-                                    src={URL.createObjectURL(image)}
-                                    alt={`Pet Image ${index + 1}`}
-                                    className="h-24 w-24 object-cover rounded"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => handleRemoveCertificate(index)}
-                                    className="absolute top-0 right-0 p-1 bg-red-600 text-white rounded-full"
-                                >
-                                    X
-                                </button>
+                    {petInfo.certificates.map((certificate, index) => (
+                        <div key={index} className="flex justify-between items-center bg-gray-100 p-3 mb-2 rounded-lg">
+                        <div className="flex items-center">
+                            <FontAwesomeIcon icon={faFile} size="2xl" className="text-gray-500 mr-5" />
+                            <div>
+                            <p className="text-gray-800">{certificate.name}</p>
+                            <p className="text-gray-500 text-sm">{(certificate.size / 1024).toFixed(2)} KB</p> {/* Hiển thị kích thước file KB */}
                             </div>
-                        ))}
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => handleRemoveCertificate(index)}
+                            className="text-red-600 hover:text-red-800"
+                        >
+                            <FontAwesomeIcon icon={faTrash} />
+                        </button>
+                        </div>
+                    ))}
                     </div>
                     <Button onClick={handleSubmit} className="w-full p-2 border border-gray-300 rounded bg-gradient-to-r from-[#FFC300] to-[#FEDF79] text-black font-semibold text-2cl"> Tạo</Button>
                 </form>

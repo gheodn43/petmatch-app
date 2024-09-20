@@ -40,14 +40,14 @@ export default function MembershipPkgs() {
                         <h2 className="text-4xl text-gray-800 mb-2 font-extrabold font-sans">VIP</h2>
                         <h3 className="text-2xl text-gray-800 mb-6 italic font-sans">50.000 VND (1 Tháng)</h3>
                     </div>
-                    <ul className="text-gray-700 space-y-4 mt-8 mb-14">
+                    <ul className="text-gray-700 space-y-4 mt-8 mb-8">
                         <li><FontAwesomeIcon size='2xl' icon={faCheck} className="text-[#09F811] mr-5" />Xem ngay ai đã thích bạn.</li>
                         <li><FontAwesomeIcon size='2xl' icon={faCheck} className="text-[#09F811] mr-5" />Undo swipe để sửa lại quyết định.</li>
                         <li><FontAwesomeIcon size='2xl' icon={faCheck} className="text-[#09F811] mr-5" />Không quảng cáo.</li>
                         <li><FontAwesomeIcon size='2xl' icon={faCheck} className="text-[#09F811] mr-5" />Xem đánh giá.</li>
                     </ul>
                     <button 
-                        className="mt-4 p-2 bg-gray-800 text-white rounded mb-4"
+                        className="mt-4 p-2 bg-[#555145] text-white rounded mb-4"
                         onClick={() => handlePayment('VIP')}
                     >
                         Thanh toán
@@ -61,7 +61,7 @@ export default function MembershipPkgs() {
                         <h2 className="text-4xl text-gray-800 mb-2 font-extrabold font-sans">PREMIUM</h2>
                         <h3 className="text-2xl text-gray-800 mb-6 italic font-sans">200.000 VND (6 Tháng)</h3>
                     </div>
-                    <ul className="text-gray-700 space-y-4 mt-8 mb-2">
+                    <ul className="text-gray-700 space-y-2 mt-8 mb-2">
                         <li><FontAwesomeIcon size='2xl' icon={faCheck} className="text-[#09F811] mr-5" />Swipes không giới hạn.</li>
                         <li><FontAwesomeIcon size='2xl' icon={faCheck} className="text-[#09F811] mr-5" />Xem ngay ai đã thích bạn.</li>
                         <li><FontAwesomeIcon size='2xl' icon={faCheck} className="text-[#09F811] mr-5" />Undo swipe để sửa lại quyết định.</li>
@@ -69,7 +69,7 @@ export default function MembershipPkgs() {
                         <li><FontAwesomeIcon size='2xl' icon={faCheck} className="text-[#09F811] mr-5" />Xem đánh giá.</li>
                     </ul>
                     <button 
-                        className="mt-4 p-2 bg-gray-800 text-white rounded mb-4"
+                        className="mt-4 p-2 bg-[#555145] text-white rounded mb-4"
                         onClick={() => handlePayment('Premium')}
                     >
                         Thanh toán

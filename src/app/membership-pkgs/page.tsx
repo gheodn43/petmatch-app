@@ -18,8 +18,8 @@ export default function MembershipPkgs() {
     };
 
     return (
-        <div className="flex flex-col p-2 h-screen space-y-6">
-            <div className='flex flex-col items-center justify-evenly xl:flex-row space-y-4 xl:space-y-0 xl:space-x-6 w-full px-20'>
+        <div className="flex flex-col items-center p-2 h-screen space-y-6">
+            <div className='flex flex-col items-center justify-evenly xl:flex-row space-y-4 xl:space-y-0 xl:space-x-6 w-full h-full px-20'>
                 <div className="flex flex-col p-10 w-full h-3/5 xl:w-[25%] bg-[#FFF9E4]  bg-opacity-50 border-4 border-gray-200 rounded-lg shadow-lg relative xl:bottom-[10%]">
                     <div className='flex items-center justify-center flex-col border-b-2 border-black '>
                         <h2 className="text-4xl text-gray-800 mb-2 font-extrabold font-sans">Free</h2>
@@ -54,7 +54,7 @@ export default function MembershipPkgs() {
                         <li><FontAwesomeIcon size='2xl' icon={faCheck} className="text-[#09F811] mr-5" />Xem đánh giá.</li>
                     </ul>
                     <button 
-                        className="mt-4 p-2 bg-gray-800 text-white rounded mb-4"
+                        className="mt-4 p-2 bg-[#555145] text-white rounded mb-4"
                         onClick={() => handlePayment('VIP')}
                     >
                         Thanh toán
@@ -76,7 +76,7 @@ export default function MembershipPkgs() {
                         <li><FontAwesomeIcon size='2xl' icon={faCheck} className="text-[#09F811] mr-5" />Xem đánh giá.</li>
                     </ul>
                     <button 
-                        className="mt-4 p-2 bg-gray-800 text-white rounded mb-4"
+                        className="mt-4 p-2 bg-[#555145] text-white rounded mb-4"
                         onClick={() => handlePayment('Premium')}
                     >
                         Thanh toán
