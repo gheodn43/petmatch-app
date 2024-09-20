@@ -3,26 +3,45 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { dbPet } from '@/localDB/pet.db'; 
 import { MatchedItem } from '@/app/model/petMatchedItem';
+import { pusherClient } from '@/lib/pusher'; 
+import { useRouter } from 'next/navigation';  // Sử dụng router để điều hướng
 
 const MatchingSection: React.FC = () => {
     const [matched, setMatched] = useState<MatchedItem[]>([]);
+    const [petId, setPetId] = useState('');
+    const router = useRouter();  // Khởi tạo router
 
     useEffect(() => {
+        const fetchSelectedPet = async () => {
+            const selectedPets = await dbPet.selected.toArray();
+            if (selectedPets.length > 0) {
+                const firstSelectedPet = selectedPets[0];
+                setPetId(firstSelectedPet.pet_id);
+            }
+        };
+
+        if (petId) {
+            const channel = pusherClient.subscribe(`private-pet-${petId}`);
+            channel.bind('matched', async (data: MatchedItem) => {
+                console.log('Pet nhận được thông báo match:', data);
+                setMatched((prevMatched) => [...prevMatched, data]);
+                await dbPet.matched.put(data); 
+            });
+
+            return () => {
+                pusherClient.unsubscribe(`private-pet-${petId}`);
+            };
+        }
+
         const fetchMatched = async () => {
             try {
-                // Kiểm tra xem bảng matched có dữ liệu không
                 const matchedData = await dbPet.matched.toArray();
-                
                 if (matchedData.length > 0) {
-                    // Nếu có dữ liệu trong bảng matched, lấy dữ liệu từ đây
                     setMatched(matchedData);
                 } else {
-                    // Nếu chưa có dữ liệu, gọi API để lấy và thêm vào DB
                     const response = await axios.get('/api/pet/getMyMatched');
                     const fetchedMatched = response.data.matched;
                     setMatched(fetchedMatched);
-                    
-                    // Thêm dữ liệu vào bảng matched
                     await dbPet.matched.bulkPut(fetchedMatched);
                 }
             } catch (error) {
@@ -34,8 +53,9 @@ const MatchingSection: React.FC = () => {
             }
         };
 
+        fetchSelectedPet();
         fetchMatched();
-    }, []);
+    }, [petId]);
 
     const getRelativeTime = (createdAt: string): string => {
         const now = new Date();
@@ -56,18 +76,27 @@ const MatchingSection: React.FC = () => {
         }
     };
 
+    const handleChatClick = (roomId: string) => {
+        // Điều hướng tới trang chat với roomId tương ứng
+        router.push(`/chat/${roomId}`);
+    };
+
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-2 bg-primary">
             {matched.map((match) => (
-                <div key={match.room_id} className="border rounded-lg shadow p-4">
+                <div 
+                    key={match.room_id} 
+                    className="border-2 rounded-lg p-4 border-secondary border:gradient-20 cursor-pointer"
+                    onClick={() => handleChatClick(match.room_id)}  // Gọi hàm handleChatClick khi click vào
+                >
                     <div className="flex flex-col items-center">
                         <img 
                             src={match.partner_avatar} 
                             alt="Partner Avatar" 
-                            className="w-24 h-24 rounded-full mb-2" 
+                            className="w-20 h-20 rounded-full mb-2" 
                         />
-                        <h3 className="font-bold text-lg">{match.partner_name}</h3>
-                        <p className="text-gray-600">{getRelativeTime(match.created_at)}</p>
+                        <h3 className="font-bold text-secondary text-lg">{match.partner_name}</h3>
+                        <p className="text-black">{getRelativeTime(match.created_at)}</p>
                     </div>
                 </div>
             ))}

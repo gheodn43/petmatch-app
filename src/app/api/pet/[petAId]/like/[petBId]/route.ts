@@ -1,7 +1,11 @@
+//api/pet/[petAId]/like/[petBId]
+
 import { NextRequest, NextResponse } from 'next/server';
 import { DynamoDBClient, GetItemCommand, PutItemCommand, QueryCommand, UpdateItemCommand } from '@aws-sdk/client-dynamodb';
 import { getUserIdFromCookie } from '@/utils/authUtils';
 import { MatchedItem } from '@/app/model/petMatchedItem';
+import Pusher from 'pusher';
+import { pusherServer } from '@/lib/pusher';
 
 const dynamoDB = new DynamoDBClient({});
 
@@ -102,8 +106,22 @@ async function createChatRoom(petAId: string, petAAavatar: string, petAName: str
     }
 }
 
-async function enableChatForpets(petAId: string, petBId: string, roomId: string) {
-    console.log(`Chat enabled for pets ${petAId} and ${petBId} in room ${roomId}`);
+async function notifyPetB(roomId: string, petAId: string, petAAavatar: string, petAName: string, petBId: string) {
+    const matchedItem = new MatchedItem({
+        room_id: roomId,
+        partner_id: petAId, // Pet A
+        partner_avatar: petAAavatar,
+        partner_name: petAName,
+        created_at: new Date().toISOString(),
+    });
+
+    try {
+        // Sử dụng Pusher để đẩy thông báo tới petB
+        await pusherServer.trigger(`private-pet-${petBId}`, 'matched', matchedItem);
+        console.log('Notification sent to petB:', petBId);
+    } catch (error) {
+        console.error('Error sending notification via Pusher:', error);
+    }
 }
 
 export async function POST(req: NextRequest, { params }: { params: { petAId: string, petBId: string } }) {
@@ -125,7 +143,7 @@ export async function POST(req: NextRequest, { params }: { params: { petAId: str
 
         if (isMatched) {
             const roomId = await createChatRoom(petAId, petAAavatar, petAName, ownerAId, petBId);
-            await enableChatForpets(petAId, petBId, roomId);
+            await notifyPetB(roomId, petAId, petAAavatar, petAName, petBId);
 
             // Tạo đối tượng MatchedItem thay vì trả về roomId
             const matchedItem = new MatchedItem({
