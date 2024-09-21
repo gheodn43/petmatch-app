@@ -21,23 +21,25 @@ const TestPage = () => {
     }, []);
 
     const handleLike = async () => {
-        const res = await fetch(`/api/pet/${petAInfo.pet_id}/like/${petBId}`, {
+        const res = await fetch(`/api/pet/liked`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
+                petAId: petAInfo.pet_id,
+                petBId: petBId,
                 pet_name: petAInfo.pet_name,
                 pet_image: petAInfo.pet_image,
             }),
         });
-
+    
         const data = await res.json();
         setResponse(data);
-
+    
         if (data?.matchedItem) {
             const { room_id, partner_id, partner_avatar, partner_name, created_at } = data.matchedItem;
-
+    
             try {
                 await dbPet.matched.add({
                     room_id,
@@ -52,6 +54,7 @@ const TestPage = () => {
             }
         }
     };
+    
 
     return (
         <div className="flex flex-col items-center p-6 bg-gray-100 min-h-screen">

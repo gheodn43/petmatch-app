@@ -1,5 +1,3 @@
-//api/pet/[petAId]/like/[petBId]
-
 import { NextRequest, NextResponse } from 'next/server';
 import { DynamoDBClient, PutItemCommand, QueryCommand, UpdateItemCommand } from '@aws-sdk/client-dynamodb';
 import { getUserIdFromCookie } from '@/utils/authUtils';
@@ -38,13 +36,13 @@ async function checkIfAlreadyLiked(petAId: string, petBId: string) {
         if (data.Items && data.Items.length > 0) {
             const item: PetItem = data.Items[0] as PetItem;
             const petLiked = item?.pet_liked?.L?.map((likedItem) => likedItem.S) ?? [];
-
+            
             if (item?.pet_images?.L && item.pet_images.L.length > 0) {
                 petBAvatar = item.pet_images.L[0].S ?? '';
             }
             petBOwnerId = item?.user_id?.S ?? '';
             petBName = item?.pet_name?.S ?? '';
-
+            
             console.log('PetB Avatar:', petBAvatar, 'PetB name:', petBName, 'PetB Owner ID:', petBOwnerId);
             return petLiked.includes(petAId);
         } else {
@@ -85,7 +83,7 @@ async function saveLike(petAId: string, petBId: string, petAOwnerId: string) {
 async function createChatRoom(petAId: string, petAAavatar: string, petAName: string, ownerAId: string, petBId: string) {
     const roomId = `${petAId}_${petBId}_${Date.now()}`;
     const createdAt = new Date().toISOString();
-    const lastMessageAt = createdAt;
+    const lastMessageAt = createdAt; 
 
     const params = {
         TableName: 'petmatch-chat-room',
@@ -133,11 +131,8 @@ async function notifyPetB(roomId: string, petAId: string, petAAavatar: string, p
 }
 
 // Định nghĩa kiểu trả về cho hàm POST
-export async function POST(
-    req: NextRequest,
-    { params }: { params: { petAId: string; petBId: string } }
-): Promise<NextResponse> {
-    const { petAId, petBId } = params;
+export async function POST(req: NextRequest): Promise<NextResponse> {
+    const { petAId, petBId } = await req.json();  // Lấy petAId và petBId từ body
     console.log('Starting POST request:', petAId, petBId);
 
     try {
@@ -146,7 +141,6 @@ export async function POST(
         const ownerAId = userIdOrResponse;
 
         const { pet_name, pet_image } = await req.json();
-
         const petAAavatar = pet_image;
         const petAName = pet_name;
 
@@ -175,4 +169,3 @@ export async function POST(
         return NextResponse.json({ message: 'Có lỗi xảy ra' }, { status: 500 });
     }
 }
-
