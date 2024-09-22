@@ -21,7 +21,7 @@ const TestPage = () => {
     }, []);
 
     const handleLike = async () => {
-        const res = await fetch(`/api/pet/liked`, {
+        const res = await fetch(`/api/pet/like`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
