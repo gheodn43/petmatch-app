@@ -61,8 +61,8 @@ async function saveLike(petAId: string, petBId: string, petAOwnerId: string) {
     const params = {
         TableName: 'petmatch-pets',
         Key: {
-            user_id: { S: petAOwnerId },  // Partition key
-            pet_id: { S: petAId }    // Sort key
+            user_id: { S: petAOwnerId },
+            pet_id: { S: petAId }
         },
         UpdateExpression: 'SET pet_liked = list_append(if_not_exists(pet_liked, :empty_list), :new_like)',
         ExpressionAttributeValues: {
