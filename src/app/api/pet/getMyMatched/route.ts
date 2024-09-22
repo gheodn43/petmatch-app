@@ -1,29 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { DynamoDBClient, QueryCommand } from '@aws-sdk/client-dynamodb';
-import { getUserIdFromCookie } from '@/utils/authUtils';
+//import { getUserIdFromCookie } from '@/utils/authUtils';
 import { MatchedItem } from '@/app/model/petMatchedItem';
+import { decodedToken } from '@/utils/decodeToken';
 
 const dynamoDB = new DynamoDBClient({});
 
 export async function GET(req: NextRequest) {
+    const accessToken = req.cookies.get('access_token')?.value;
+    if (!accessToken) return NextResponse.json({ message: 'Access token is missing.' }, { status: 401 });
+    const userId = await decodedToken(accessToken);
+    if (!userId) return NextResponse.json({ message: 'Invalid Access Token' }, { status: 401 });
     try {
-        const userIdOrResponse = await getUserIdFromCookie(req);
-        if (userIdOrResponse instanceof NextResponse) return userIdOrResponse;
-        const userId = userIdOrResponse;
-
-        // Truy vấn tất cả các phòng chat mà người dùng là ownerA hoặc ownerB
         const paramsA = {
             TableName: 'petmatch-chat-room',
-            IndexName: 'GSI_OwnerA', // GSI với ownerA_id
+            IndexName: 'GSI_OwnerA', 
             KeyConditionExpression: 'ownerA_id = :userId',
             ExpressionAttributeValues: {
                 ':userId': { S: userId }
             },
         };
-
         const paramsB = {
             TableName: 'petmatch-chat-room',
-            IndexName: 'GSI_OwnerB', // GSI với ownerB_id
+            IndexName: 'GSI_OwnerB', 
             KeyConditionExpression: 'ownerB_id = :userId',
             ExpressionAttributeValues: {
                 ':userId': { S: userId }
@@ -36,7 +35,7 @@ export async function GET(req: NextRequest) {
         ]);
 
         const matched: Array<MatchedItem> = [];
-        const processedRoomIds = new Set<string>(); // Set để lưu room_id đã xử lý
+        const processedRoomIds = new Set<string>(); 
 
         // Xử lý dữ liệu từ ownerA
         if (dataA.Items) {

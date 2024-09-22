@@ -1,12 +1,11 @@
 'use client';
-
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
 
-export default function PagePaymentSuccess() {
+const PaymentSuccessContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const PAID = 'PAID';
@@ -29,8 +28,7 @@ export default function PagePaymentSuccess() {
   }, [searchParams, router]);
 
   return (
-    <div>
-      <div className="flex flex-col items-center justify-center h-full mt-36">
+    <div className="flex flex-col items-center justify-center h-full mt-36">
       <div className="bg-white p-10 rounded-lg shadow-md text-center">
         <FontAwesomeIcon icon={faCheckCircle} className="text-green-500 text-6xl mb-4" />
         <h1 className="text-3xl font-bold text-gray-800 mb-2">Thanh toán thành công!</h1>
@@ -43,6 +41,13 @@ export default function PagePaymentSuccess() {
         </button>
       </div>
     </div>
-    </div>
+  );
+}
+
+export default function PagePaymentSuccess() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <PaymentSuccessContent />
+    </Suspense>
   );
 }
