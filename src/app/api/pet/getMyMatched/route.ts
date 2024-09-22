@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { DynamoDBClient, QueryCommand } from '@aws-sdk/client-dynamodb';
-//import { getUserIdFromCookie } from '@/utils/authUtils';
 import { MatchedItem } from '@/app/model/petMatchedItem';
 import { decodedToken } from '@/utils/decodeToken';
 
@@ -42,7 +41,6 @@ export async function GET(req: NextRequest) {
             for (const item of dataA.Items) {
                 const roomId = item.room_id.S!;
                 if (!processedRoomIds.has(roomId)) {
-                    console.log('chua xu ly')
                     matched.push({
                         room_id: roomId,
                         partner_id: item.ownerB_id.S!, // Đảm bảo không phải undefined

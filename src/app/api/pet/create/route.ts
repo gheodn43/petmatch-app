@@ -5,8 +5,6 @@ import { getUserIdFromCookie } from '@/utils/authUtils';
 import { uploadFileToS3 } from '@/utils/uploadFIleUtils';
 import { CreatePetDto, PetOverviewDto } from '@/app/model/pet';
 import { v4 as uuidv4 } from 'uuid';
-
-// Khởi tạo DynamoDB Client
 const dynamoDB = new DynamoDBClient({});
 
 export async function POST(request: NextRequest) {
@@ -112,8 +110,6 @@ export async function POST(request: NextRequest) {
             pet_pricing: petDto.pet_pricing,
             pet_status: petDto.pet_status,
         });
-
-        console.log(petOverviewDto);
         return NextResponse.json(petOverviewDto, { status: 200 });
     } catch (error) {
         console.error("Error uploading files or creating pet:", error);

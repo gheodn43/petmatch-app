@@ -46,7 +46,7 @@ const ChatPage: React.FC = () => {
         fetchMessages();
 
         const channel = pusherClient.subscribe(`private-chat-${roomId}`);
-        
+
         // Lắng nghe sự kiện new-message
         channel.bind('new-message', (message: Message) => {
             // Kiểm tra nếu tin nhắn đã tồn tại, tránh việc thêm trùng lặp
@@ -114,6 +114,13 @@ const ChatPage: React.FC = () => {
                 </div>
             )}
             <div className="p-4 bg-white flex">
+                <button
+                    onClick={sendMessage}
+                    className={`mr-2 p-2 pl-8 pr-8 text-center rounded ${isSending ? 'bg-gray-500 text-white' : 'border-secondary text-gray-500 bg-primary border-2 flex items-center justify-center'}`}
+                    disabled={isSending}  // Disable khi đang gửi tin nhắn
+                >
+                    {isSending ? 'Đang gửi...' : 'Gửi'}
+                </button>
                 <input
                     type="text"
                     value={newMessage}
@@ -123,13 +130,7 @@ const ChatPage: React.FC = () => {
                     placeholder="Nhập tin nhắn..."
                     disabled={isSending}  // Disable khi đang gửi tin nhắn
                 />
-                <button
-                    onClick={sendMessage}
-                    className={`ml-2 p-2 pl-8 pr-8 text-center rounded ${isSending ? 'bg-gray-500 text-white' : 'border-secondary text-gray-500 bg-primary border-2 flex items-center justify-center'}`}
-                    disabled={isSending}  // Disable khi đang gửi tin nhắn
-                >
-                    {isSending ? 'Đang gửi...' : 'Gửi'}
-                </button>
+
             </div>
         </div>
     );

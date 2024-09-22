@@ -34,7 +34,6 @@ export async function POST(req: Request) {
     };
 
     const { Items } = await dynamoDB.send(new QueryCommand(queryParams));
-    console.log(Items)
     let user_id;
 
     if (Items && Items.length > 0) {
@@ -55,8 +54,6 @@ export async function POST(req: Request) {
       };
       await dynamoDB.send(new PutItemCommand(putItemParams));
     }
-
-    // Create a new JWT token
     const accessToken = await new SignJWT({ user_id, user_email })
       .setProtectedHeader({ alg: 'HS256' })
       .setExpirationTime('1h')
@@ -85,7 +82,6 @@ export async function POST(req: Request) {
 
     return response;
   } catch (error) {
-    console.error('Error:', error);
     return NextResponse.json({ message: 'Internal server error.' }, { status: 500 });
   }
 }

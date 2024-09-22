@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import cookie from 'cookie';
-
 const JWT_SECRET = process.env.JWT_SECRET;
-
 export async function getUserIdFromCookie(req: NextRequest): Promise<string | NextResponse> {
     if (!JWT_SECRET) {
         return NextResponse.json({ message: 'JWT secret is not defined.' }, { status: 500 });
