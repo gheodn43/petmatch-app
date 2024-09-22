@@ -20,7 +20,7 @@ export default function MainPageLayout({
                 </div>
 
                 {/* Main Content */}
-                <div className="flex-1 bg-white p-4 overflow-y-auto h-full">
+                <div className="flex-1 bg-white overflow-y-auto h-full">
                     {main}
                 </div>
             </div>

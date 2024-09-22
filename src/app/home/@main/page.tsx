@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import TabPets from '@/components/pet/tabpets';
+import { Button } from "@headlessui/react";
 import { PetOverviewDto } from '@/app/model/pet';
 import { dbPet } from '@/localDB/pet.db'; // Import Dexie database instance
 
@@ -41,20 +42,28 @@ export default function MainSection() {
       {error ? (
         <p>{error}</p>
       ) : isNotFound ? (
-        <div className='flex justify-center items-center'>
-          <div>
-            <img
-              src="/images/bg-no-pet.png"
-              alt="No pets found"
-              className="opacity-35 w-[250px] sm:w-[450px] md:w-[550px] lg:w-[650px]"
-            />
-          </div>
+        <div className="bg-white absolute top-[50%] left-[60%] transform -translate-x-1/2 -translate-y-1/2">
+      <div className="w-[800px] h-[600px]">
+        <div className="flex flex-col w-2/3">
+          <span className="font-sans font-black text-[70px] text-[#FFC629] uppercase">
+            ghép đôi
+          </span>
+          <span className="font-sans font-black text-2xl text-[#666666] uppercase flex justify-end ">
+            THÚ CƯNG CỦA BẠN NGAY.
+          </span>
+        </div>
+        <div className="absolute top-1/2 -left-[10%]">
           <Link href="/membership-pkgs">
-            <button className="mt-4 p-2 bg-blue-500 text-white rounded">
-              View all package
-            </button>
+            <Button className="rounded-[25px] font-black font-sans w-60 h-16 bg-gradient-to-br from-[#FFC300] via-[#FEDF79] to-[#FFB800] text-white mt-10 ml-10 uppercase">
+            View all package
+            </Button>
           </Link>
         </div>
+        <div className="bg-[#FEDF79] bg-opacity-20 p-8 rounded-tl-[300px] rounded-tr-[80px] rounded-br-[290px] rounded-bl-[170px] w-[680px] h-[500px] absolute top-20 left-[20%]">
+          <img src="/images/bg-no-pet.png" alt="thumb" />
+        </div>
+      </div>
+    </div>
       ) : pets.length > 0 ? (
         <div>We will show other pet cards here</div>
       ) : (
