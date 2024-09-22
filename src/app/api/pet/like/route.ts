@@ -107,6 +107,7 @@ async function createChatRoom(petAId: string, petAAavatar: string, petAName: str
 async function notifyPetB(roomId: string, petAId: string, petAAavatar: string, petAName: string, petBId: string) {
     const matchedItem = new MatchedItem({
         room_id: roomId,
+        pet_id: petBId,
         partner_id: petAId, // Pet A
         partner_avatar: petAAavatar,
         partner_name: petAName,
@@ -134,6 +135,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
             await notifyPetB(roomId, petAId, petAAavatar, petAName, petBId);
             const matchedItem = new MatchedItem({
                 room_id: roomId,
+                pet_id:petAId,
                 partner_id: petBId,
                 partner_avatar: petBAvatar,
                 partner_name: petBName,

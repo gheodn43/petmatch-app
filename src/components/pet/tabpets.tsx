@@ -20,10 +20,8 @@ const TabPets: React.FC<TabPetsProps> = ({ pets }) => {
     const fetchSelectedPets = async () => {
       const selected = await dbPet.selected.toArray();
       setSelectedPets(selected);
-
-      // Nếu không có bản ghi nào, thêm pet đầu tiên với trạng thái 'active'
       if (selected.length === 0 && pets.length > 0) {
-        await dbPet.selected.add({ ...pets[0], pet_status: 'active' });
+        await handleSelectPet(pets[0]);
       }
     };
 

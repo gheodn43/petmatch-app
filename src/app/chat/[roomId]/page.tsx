@@ -94,15 +94,15 @@ const ChatPage: React.FC = () => {
     return (
         <div className="flex flex-col h-screen">
             {loadingMessages ? (
-                <div className="flex-grow p-4 bg-gray-100 flex items-center justify-center">
+                <div className="flex-grow p-4 bg-white flex items-center justify-center">
                     <p className="text-gray-500">Đang tải tin nhắn...</p>
                 </div>
             ) : (!messages || messages.length === 0) ? (
-                <div className="flex-grow p-4 bg-gray-100 flex items-center justify-center">
+                <div className="flex-grow p-4 bg-white flex items-center justify-center">
                     <p className="text-gray-500">Không có tin nhắn nào để hiển thị.</p>
                 </div>
             ) : (
-                <div className="flex-grow overflow-y-auto p-4 bg-gray-100">
+                <div className="flex-grow overflow-y-auto p-4 bg-white">
                     {messages.map((msg) => (
                         <div key={msg.id} className={`mb-2 flex ${msg.senderId === petInfo.pet_id ? 'justify-end' : 'justify-start'}`}>
                             <div className={`p-2 rounded-lg shadow ${msg.senderId === petInfo.pet_id ? ' bg-[#FFD971] text-gray-900' : 'bg-[#FFF9E4] text-gray-900'}`}>
@@ -113,7 +113,7 @@ const ChatPage: React.FC = () => {
                     <div ref={messagesEndRef} />
                 </div>
             )}
-            <div className="p-4 bg-white flex">
+            <div className="p-4 bg-primary flex">
                 <button
                     onClick={sendMessage}
                     className={`mr-2 p-2 pl-8 pr-8 text-center rounded ${isSending ? 'bg-gray-500 text-white' : 'border-secondary text-gray-500 bg-primary border-2 flex items-center justify-center'}`}

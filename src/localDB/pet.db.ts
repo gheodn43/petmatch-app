@@ -10,7 +10,7 @@ const dbPet = new Dexie('PetDatabase') as Dexie & {
 
 dbPet.version(1).stores({
     pet: 'pet_id, pet_name, pet_type, pet_species, pet_image, pet_gender, pet_pricing, pet_status',
-    matched: 'room_id, partner_id, partner_avatar, partner_name, created_at',
+    matched: 'room_id, pet_id, partner_id, partner_avatar, partner_name, created_at',
     selected: 'pet_id, pet_name, pet_type, pet_species, pet_image, pet_gender, pet_pricing, pet_status' // Bảng selected
 });
 

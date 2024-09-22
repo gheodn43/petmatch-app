@@ -38,11 +38,12 @@ const TestPage = () => {
         setResponse(data);
     
         if (data?.matchedItem) {
-            const { room_id, partner_id, partner_avatar, partner_name, created_at } = data.matchedItem;
+            const { room_id,pet_id, partner_id, partner_avatar, partner_name, created_at } = data.matchedItem;
     
             try {
                 await dbPet.matched.add({
                     room_id,
+                    pet_id,
                     partner_id,
                     partner_avatar,
                     partner_name,
