@@ -1,5 +1,4 @@
 // api/chat/[roomId]/send/route.ts
-
 import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
 import { NextRequest, NextResponse } from 'next/server';
 import { pusherServer } from '@/lib/pusher'; // Pusher server instance
@@ -19,7 +18,6 @@ export async function POST(req: NextRequest, { params }: { params: { roomId: str
         }
         const messageId = uuidv4();
         const createdAt = new Date().toISOString();
-
         // Lưu tin nhắn vào DynamoDB
         const newMessage: Message = {
             id: messageId,
@@ -29,7 +27,6 @@ export async function POST(req: NextRequest, { params }: { params: { roomId: str
             content: message,
             createdAt
         };
-
         // Phát sự kiện qua Pusher để cập nhật tin nhắn mới
         await pusherServer.trigger(`private-chat-${roomId}`, 'new-message', newMessage);
         const command = new PutItemCommand({
@@ -43,7 +40,6 @@ export async function POST(req: NextRequest, { params }: { params: { roomId: str
                 createdAt: { S: createdAt }
             }
         });
-
         await dynamoDB.send(command);
         console.log(newMessage)
         return NextResponse.json({ success: true }, { status: 200 });
