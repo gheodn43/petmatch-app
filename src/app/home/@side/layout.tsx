@@ -33,7 +33,7 @@ export default function SideLayout({
             </div>
             <div className="mt-4">
                 {activeTab === "chat" && <div className="bg-red-500 h-full0">{conversation}</div>}
-                {activeTab === "matching" && <div className="bg-green-400">{matching}</div>}
+                {activeTab === "matching" && <div>{matching}</div>}
             </div>
             {children}
         </>
