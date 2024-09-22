@@ -38,7 +38,10 @@
     "pusher": "^5.2.0",
     "pusher-js": "^8.4.0-rc2",
     "react": "^18",
+    "react-beautiful-dnd": "^13.1.1",
     "react-dom": "^18",
+    "react-draggable": "^4.4.6",
+    "react-swipeable": "^7.0.1",
     "uuid": "^10.0.0"
   },
   "devDependencies": {
