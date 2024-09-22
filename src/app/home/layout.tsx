@@ -1,22 +1,26 @@
 'use client';
 import React from 'react';
-import { UserProvider } from '@/providers/UserContext'; // Import UserProvider từ file đã tạo
+import { UserProvider } from '@/providers/UserContext';
 
-export default function MainPageLayout({ 
+export default function MainPageLayout({
     children, side, main
 }: { 
-    children: React.ReactNode
+    children?: React.ReactNode
     side: React.ReactNode
     main: React.ReactNode
 }) {
     return (
         <UserProvider>
             <div className="flex h-screen">
-                {children}
-                <div className="flex-none bg-primary w-[45%] sm:w-[42%] md:w-[40%] lg:w-[32%] xl:w-[20%]">
+                {children} {/* Optional for wrapping extra content */}
+                
+                {/* Sidebar */}
+                <div className="flex-none bg-primary w-[25%] sm:w-[30%] md:w-[32%] lg:w-[20%] xl:w-[18%] overflow-y-auto h-full">
                     {side}
                 </div>
-                <div className="flex-1 bg-white">
+
+                {/* Main Content */}
+                <div className="flex-1 bg-white p-4 overflow-y-auto h-full">
                     {main}
                 </div>
             </div>
