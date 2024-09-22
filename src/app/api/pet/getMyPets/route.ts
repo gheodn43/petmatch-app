@@ -1,15 +1,17 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { DynamoDBClient, QueryCommand } from '@aws-sdk/client-dynamodb';
-import { getUserIdFromCookie } from '@/utils/authUtils';
+//import { getUserIdFromCookie } from '@/utils/authUtils';
+import { decodedToken } from '@/utils/decodeToken';
 import { PetOverviewDto } from '@/app/model/pet';
 
 const dynamoDB = new DynamoDBClient({});
 
 export async function GET(req: NextRequest) {
+  const accessToken = req.cookies.get('access_token')?.value;
+  if (!accessToken) return NextResponse.json({ message: 'Access token is missing.' }, { status: 401 });
+  const user_id = await decodedToken(accessToken);
+  if (!user_id) return NextResponse.json({ message: 'Invalid Access Token' }, { status: 401 });
   try {
-    const userIdOrResponse = await getUserIdFromCookie(req);
-    if (userIdOrResponse instanceof NextResponse) return userIdOrResponse;
-    const user_id = userIdOrResponse;
     const queryParams = {
       TableName: 'petmatch-pets',
       KeyConditionExpression: 'user_id = :user_id',
@@ -18,16 +20,16 @@ export async function GET(req: NextRequest) {
       },
     };
     const { Items } = await dynamoDB.send(new QueryCommand(queryParams));
-    
-    console.log('DynamoDB Items:', Items); // Kiểm tra dữ liệu trả về từ DynamoDB
-    
+
+    console.log('DynamoDB Items:', Items);
+
     if (!Items || Items.length === 0) {
       return NextResponse.json({ message: 'No pets found for this user.' }, { status: 404 });
     }
 
     const pets = Items.map((item) => {
       const petImages = item.pet_images?.L?.map(image => image.S ?? '') || [];
-      console.log('Pet Images:', petImages); 
+      console.log('Pet Images:', petImages);
       return new PetOverviewDto({
         pet_id: item.pet_id.S ?? '',
         pet_name: item.pet_name.S ?? '',

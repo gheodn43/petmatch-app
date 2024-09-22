@@ -149,7 +149,7 @@ export default function AddPetForm() {
                     {/* Hàng 3: 2 ô input dạng number */}
                     <div className="flex space-x-4">
                         <input name="petAge" type="number" placeholder="Tuổi" className="flex-1 p-2 border border-gray-300 rounded text-gray-900" onChange={handleInputChange} />
-                        <input name="birthCount" type="number" placeholder="Số lần" className="flex-1 p-2 border border-gray-300 rounded" onChange={handleInputChange} />
+                        <input name="birthCount" type="number" placeholder="Số lần" className="flex-1 p-2 border border-gray-300 rounded text-gray-900" onChange={handleInputChange} />
                     </div>
 
                     {/* Hàng 4: chọn giới tính và ô input text */}

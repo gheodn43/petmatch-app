@@ -1,5 +1,3 @@
-//api/pet/[petAId]/like/[petBId]
-
 import { NextRequest, NextResponse } from 'next/server';
 import { DynamoDBClient, PutItemCommand, QueryCommand, UpdateItemCommand } from '@aws-sdk/client-dynamodb';
 import { getUserIdFromCookie } from '@/utils/authUtils';
@@ -63,8 +61,8 @@ async function saveLike(petAId: string, petBId: string, petAOwnerId: string) {
     const params = {
         TableName: 'petmatch-pets',
         Key: {
-            user_id: { S: petAOwnerId },  // Partition key
-            pet_id: { S: petAId }    // Sort key
+            user_id: { S: petAOwnerId },
+            pet_id: { S: petAId }
         },
         UpdateExpression: 'SET pet_liked = list_append(if_not_exists(pet_liked, :empty_list), :new_like)',
         ExpressionAttributeValues: {
@@ -132,17 +130,15 @@ async function notifyPetB(roomId: string, petAId: string, petAAavatar: string, p
     }
 }
 
-export const POST = async (req: NextRequest, { params }: { params: { petAId: string, petBId: string } }) => {
-    const { petAId, petBId } = params;
+// Định nghĩa kiểu trả về cho hàm POST
+export async function POST(req: NextRequest): Promise<NextResponse> {
+    const { petAId, petBId, pet_name, pet_image } = await req.json();  // Lấy petAId và petBId từ body
     console.log('Starting POST request:', petAId, petBId);
 
     try {
         const userIdOrResponse = await getUserIdFromCookie(req);
         if (userIdOrResponse instanceof NextResponse) return userIdOrResponse;
         const ownerAId = userIdOrResponse;
-
-        const { pet_name, pet_image } = await req.json();
-
         const petAAavatar = pet_image;
         const petAName = pet_name;
 
@@ -168,6 +164,6 @@ export const POST = async (req: NextRequest, { params }: { params: { petAId: str
         }
     } catch (error) {
         console.error('Error in POST handler:', error);
-        return NextResponse.json({ message: 'Có lỗi xảy ra'}, { status: 500 });
+        return NextResponse.json({ message: 'Có lỗi xảy ra' }, { status: 500 });
     }
-};
+}

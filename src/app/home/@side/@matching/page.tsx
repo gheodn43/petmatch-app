@@ -82,25 +82,27 @@ const MatchingSection: React.FC = () => {
     };
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-2 bg-primary">
-            {matched.map((match) => (
-                <div 
-                    key={match.room_id} 
-                    className="border-2 rounded-lg p-4 border-secondary border:gradient-20 cursor-pointer"
-                    onClick={() => handleChatClick(match.room_id)}  // Gọi hàm handleChatClick khi click vào
-                >
-                    <div className="flex flex-col items-center">
-                        <img 
-                            src={match.partner_avatar} 
-                            alt="Partner Avatar" 
-                            className="w-20 h-20 rounded-full mb-2" 
-                        />
-                        <h3 className="font-bold text-secondary text-lg">{match.partner_name}</h3>
-                        <p className="text-black">{getRelativeTime(match.created_at)}</p>
-                    </div>
+        <div className="grid grid-cols-3 gap-4 p-4">
+        {matched.map((match) => (
+            <div 
+                key={match.room_id} 
+                className="relative group border-2 border-gray-300 rounded-lg p-1 transition-all duration-300 transform hover:scale-110 hover:border-yellow-400"
+                onClick={() => handleChatClick(match.room_id)}
+            >
+                {/* Hình ảnh đối tác */}
+                <img 
+                    src={match.partner_avatar} 
+                    alt={match.partner_name} 
+                    className="w-24 h-28 object-cover rounded-lg"
+                />
+
+                {/* Tên đối tác */}
+                <div className="absolute bottom-2 left-2">
+                    <h3 className="text-white text-sm font-bold">{match.partner_name}</h3>
                 </div>
-            ))}
-        </div>
+            </div>
+        ))}
+    </div>
     );
 };
 
