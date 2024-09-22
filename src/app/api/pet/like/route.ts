@@ -132,15 +132,13 @@ async function notifyPetB(roomId: string, petAId: string, petAAavatar: string, p
 
 // Định nghĩa kiểu trả về cho hàm POST
 export async function POST(req: NextRequest): Promise<NextResponse> {
-    const { petAId, petBId } = await req.json();  // Lấy petAId và petBId từ body
+    const { petAId, petBId, pet_name, pet_image } = await req.json();  // Lấy petAId và petBId từ body
     console.log('Starting POST request:', petAId, petBId);
 
     try {
         const userIdOrResponse = await getUserIdFromCookie(req);
         if (userIdOrResponse instanceof NextResponse) return userIdOrResponse;
         const ownerAId = userIdOrResponse;
-
-        const { pet_name, pet_image } = await req.json();
         const petAAavatar = pet_image;
         const petAName = pet_name;
 

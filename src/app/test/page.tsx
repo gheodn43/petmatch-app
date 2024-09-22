@@ -21,7 +21,7 @@ const TestPage = () => {
     }, []);
 
     const handleLike = async () => {
-        const res = await fetch(`/api/pet/liked`, {
+        const res = await fetch(`/api/pet/like`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -79,12 +79,12 @@ const TestPage = () => {
                     placeholder="Pet B ID"
                     value={petBId}
                     onChange={(e) => setPetBId(e.target.value)}
-                    className="border border-gray-300 rounded-md p-2 w-60"
+                    className="border border-gray-300 rounded-md p-2 w-60 text-black"
                 />
             </div>
             <button
                 onClick={handleLike}
-                className="bg-secondary text-white rounded-xl px-10 py-2 hover:bg-blue-600 transition"
+                className="bg-secondary text-black rounded-xl px-10 py-2 hover:bg-blue-600 transition"
             >
                 Like
             </button>
