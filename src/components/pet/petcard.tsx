@@ -35,7 +35,7 @@
 
 
 'use client';
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart, faX } from '@fortawesome/free-solid-svg-icons';
 import { useSwipeable } from 'react-swipeable';
@@ -47,7 +47,8 @@ export default function PetCard() {
   const [currentIndex, setCurrentIndex] = useState(0); // Index của pet hiện tại
   const [currentImageIndex, setCurrentImageIndex] = useState(0); // Index của ảnh hiện tại của pet
   const [swipeLogs, setSwipeLogs] = useState<string[]>([]);
-  const cardRef = React.useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const nodeRef = useRef(null); // Ref để sử dụng với Draggable
 
   const [pets, setPets] = useState<Pet[]>(petData.pets);
   const [loading, setLoading] = useState<boolean>(false);
@@ -59,8 +60,8 @@ export default function PetCard() {
   useEffect(() => {
     const loadMorePets = () => {
       setLoading(true);
-      const newPets = pets.slice(startIndex, startIndex + count);
-      setPets((prevPets) => [...prevPets, ...newPets]);
+      const newPets = petData.pets.slice(startIndex, startIndex + count); // Load từ JSON
+      setPets(newPets);
       setLoading(false);
       if (newPets.length < count) {
         setHasMore(false); // Không còn dữ liệu để load
@@ -76,20 +77,21 @@ export default function PetCard() {
     }
   };
 
-  const handleSwipe = (direction: string) => {
+  const handleSwipe = useCallback((direction: string) => {
     const log = direction === 'right' ? 'like' : 'dislike';
-    setSwipeLogs((prevLogs) => [...prevLogs, `${log} on ${pets[currentIndex].pet_name} with ID is ${pets[currentIndex].pet_id}`]);
-    setCurrentIndex((prevIndex) => (prevIndex === pets.length - 1 ? 0 : prevIndex + 1));
+    setSwipeLogs((prevLogs) => [
+      ...prevLogs,
+      `${log} on ${pets[currentIndex].pet_name} with ID is ${pets[currentIndex].pet_id}`,
+    ]);
+    setCurrentIndex((prevIndex) =>
+      prevIndex === pets.length - 1 ? 0 : prevIndex + 1
+    );
     setCurrentImageIndex(0);
-    if (direction === 'right') {
-      setAnimationClass('like-animation');
-    } else {
-      setAnimationClass('dislike-animation');
-    }
+    setAnimationClass(direction === 'right' ? 'like-animation' : 'dislike-animation');
     setTimeout(() => {
       setAnimationClass(''); // Reset lại animation class sau 1s
     }, 1000);
-  };
+  }, [currentIndex, pets]);
 
   const swipeHandlers = useSwipeable({
     onSwipedLeft: () => handleSwipe('left'),
@@ -112,7 +114,7 @@ export default function PetCard() {
 
   const resetCardPosition = () => {
     if (cardRef.current) {
-      cardRef.current.style.transition = 'none';
+      cardRef.current.style.transition = 'transform 0.3s ease'; // Thêm transition để mượt hơn
       cardRef.current.style.transform = 'translate(0px, 0px)';
     }
   };
@@ -136,19 +138,26 @@ export default function PetCard() {
   };
 
   return (
-    <div className="flex flex-col items-center text-black pt-11 ">
+    <div className="flex flex-col items-center text-black pt-11">
       {currentPet ? (
-        <Draggable onStop={onDragStop} position={{ x: 0, y: 0 }}>
-          <div className='relative w-[300px] h-[450px]  shadow-lg shadow-primary bg-secondary rounded-xl'>
-            <div {...swipeHandlers} ref={cardRef} className={`rounded-xl bg-white overflow-hidden ${animationClass}`}>
+        <Draggable nodeRef={nodeRef} onStop={onDragStop} position={{ x: 0, y: 0 }}>
+          <div
+            ref={nodeRef}
+            className="relative w-[300px] h-[450px] shadow-lg shadow-primary bg-secondary rounded-xl"
+          >
+            <div
+              {...swipeHandlers}
+              ref={cardRef}
+              className={`rounded-xl bg-white overflow-hidden ${animationClass}`}
+            >
               {/* Click vào nửa bên phải hoặc trái để chuyển ảnh */}
               <div
                 className="relative w-full h-[350px] object-cover cursor-pointer"
                 onClick={handleImageClick}
               >
                 <img
-                  src={currentPet.pet_images[currentImageIndex]}
-                  alt={currentPet.pet_name}
+                  src={currentPet.pet_images?.[currentImageIndex] || 'default-image-url'}
+                  alt={currentPet.pet_name || 'No Name'}
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -168,15 +177,21 @@ export default function PetCard() {
                   handleSwipe('left'); // Tương đương với swipe trái
                 }}
               >
-                <FontAwesomeIcon icon={faX} className="text-red-700 bg-primary p-2 rounded-full responsive-text hover:text-primary hover:bg-secondary" />
+                <FontAwesomeIcon
+                  icon={faX}
+                  className="text-red-700 bg-primary p-2 rounded-full responsive-text hover:text-primary hover:bg-secondary"
+                />
               </div>
               <div
-                className="absolute right-0 top-1/2 transform -translate-y-1/ cursor-pointer"
+                className="absolute right-0 top-1/2 transform -translate-y-1/2 cursor-pointer"
                 onClick={() => {
                   handleSwipe('right'); // Tương đương với swipe phải
                 }}
               >
-                <FontAwesomeIcon icon={faHeart} className="text-yellow-500 bg-primary p-2 rounded-full responsive-text hover:text-primary hover:bg-secondary" />
+                <FontAwesomeIcon
+                  icon={faHeart}
+                  className="text-yellow-500 bg-primary p-2 rounded-full responsive-text hover:text-primary hover:bg-secondary"
+                />
               </div>
             </div>
           </div>

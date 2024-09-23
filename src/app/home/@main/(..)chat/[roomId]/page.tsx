@@ -1,19 +1,22 @@
 'use client';
 import React, { useEffect, useState, useRef } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import axios from 'axios';
-import { pusherClient } from '@/lib/pusher'; // Pusher client
+import { pusherClient } from '@/lib/pusher';
 import { Message } from '@/app/model/message';
 import { dbPet } from '@/localDB/pet.db';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 
 const ChatPage: React.FC = () => {
     const { roomId } = useParams();
     const [messages, setMessages] = useState<Message[]>([]);
     const [newMessage, setNewMessage] = useState<string>('');
     const [petInfo, setPetInfo] = useState({ pet_id: '', pet_name: '' });
-    const messagesEndRef = useRef<HTMLDivElement>(null); // Ref để tự động cuộn xuống khi có tin nhắn mới
-    const [isSending, setIsSending] = useState(false);  // Trạng thái khi tin nhắn đang được gửi
-    const [loadingMessages, setLoadingMessages] = useState(true); // Trạng thái khi đang tải tin nhắn
+    const messagesEndRef = useRef<HTMLDivElement>(null);
+    const [isSending, setIsSending] = useState(false);
+    const [loadingMessages, setLoadingMessages] = useState(true);
+    const router = useRouter();
 
     // Cuộn xuống khi có tin nhắn mới
     const scrollToBottom = () => {
@@ -90,9 +93,14 @@ const ChatPage: React.FC = () => {
             sendMessage();
         }
     };
-
+    const handleBack = () => {
+        router.back(); // Quay lại trang trước đó
+      };
     return (
         <div className="flex flex-col">
+            <div className='flex space-x-4 bg-white py-3 px-6 fixed top-16 left-[25%] sm:left-[30%] md:left-[32%] lg:left-[20%] xl:left-[18%] right-0'>
+                <FontAwesomeIcon icon={faArrowLeft} className='text-gray-400 cursor-pointer text-lg' onClick={handleBack}/> 
+            </div>
             <div className='overflow-hidden'>
                 {loadingMessages ? (
                     <div className="flex-grow p-4 bg-white flex items-center justify-center">
