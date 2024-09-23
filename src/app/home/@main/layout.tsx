@@ -34,11 +34,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     };
     fetchPets();
   }, []);
-
   return (
-    <div>
-      <TabPets pets={pets} />
-      {children}
+    <div className='relative'>
+      <div className='fixed top-0 left-[25%] sm:left-[30%] md:left-[32%] lg:left-[20%] xl:left-[18%] right-0 z-10'> 
+        <TabPets pets={pets} />
+      </div>
+      <div className='pt-16 pb-20'>
+        {children}
+      </div>
     </div>
   );
 }

@@ -118,3 +118,39 @@ h1, h2, h3, h4, h5, h6, p, span, a {
     height: 200px; /* Kích thước logo cho màn hình lớn */
   }
 }
+
+@keyframes flyRight {
+  0% {
+    transform: translate(0, 0);
+    opacity: 1;
+  }
+  50% {
+    transform: translate(30px, -20px);
+  }
+  100% {
+    transform: translate(150px, -100px);
+    opacity: 0;
+  }
+}
+
+@keyframes flyLeft {
+  0% {
+    transform: translate(0, 0);
+    opacity: 1;
+  }
+  50% {
+    transform: translate(-30px, -20px);
+  }
+  100% {
+    transform: translate(-150px, -100px);
+    opacity: 0;
+  }
+}
+
+.like-animation {
+  animation: flyRight 0.6s forwards;
+}
+
+.dislike-animation {
+  animation: flyLeft 0.6s forwards;
+}
