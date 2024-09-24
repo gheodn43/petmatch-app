@@ -40,8 +40,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart, faX } from '@fortawesome/free-solid-svg-icons';
 import { useSwipeable } from 'react-swipeable';
 import Draggable from 'react-draggable';
-import { Pet } from '@/app/model/pet';
-import petData from '@/components/pet/virtual_res_card.json'; // Import file JSON
+import petData from '@/components/pet/virtual_res_card.json'; // Dummy pet data
 
 export default function PetCard() {
   const [currentIndex, setCurrentIndex] = useState(0); // Index của pet hiện tại
@@ -50,32 +49,8 @@ export default function PetCard() {
   const cardRef = useRef<HTMLDivElement>(null);
   const nodeRef = useRef(null); // Ref để sử dụng với Draggable
 
-  const [pets, setPets] = useState<Pet[]>(petData.pets);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [hasMore, setHasMore] = useState<boolean>(true);
-  const [startIndex, setStartIndex] = useState<number>(0);
+  const [pets, setPets] = useState(petData.pets);
   const [animationClass, setAnimationClass] = useState<string>('');
-  const count = 5; // Số bản ghi mỗi lần load
-
-  useEffect(() => {
-    const loadMorePets = () => {
-      setLoading(true);
-      const newPets = petData.pets.slice(startIndex, startIndex + count); // Load từ JSON
-      setPets(newPets);
-      setLoading(false);
-      if (newPets.length < count) {
-        setHasMore(false); // Không còn dữ liệu để load
-      }
-    };
-
-    loadMorePets();
-  }, [startIndex]);
-
-  const handleLoadMore = () => {
-    if (hasMore && !loading) {
-      setStartIndex((prevIndex) => prevIndex + count);
-    }
-  };
 
   const handleSwipe = useCallback((direction: string) => {
     const log = direction === 'right' ? 'like' : 'dislike';
@@ -114,12 +89,12 @@ export default function PetCard() {
 
   const resetCardPosition = () => {
     if (cardRef.current) {
-      cardRef.current.style.transition = 'transform 0.3s ease'; // Thêm transition để mượt hơn
+      cardRef.current.style.transition = 'transform 0.3s ease'; // Smooth transition back to center
       cardRef.current.style.transform = 'translate(0px, 0px)';
     }
   };
 
-  // Xử lý chuyển đổi ảnh
+  // Handles image click to switch between images
   const handleImageClick = (event: React.MouseEvent) => {
     const { clientX } = event;
     const { left, right } = (event.target as HTMLDivElement).getBoundingClientRect();
@@ -138,81 +113,78 @@ export default function PetCard() {
   };
 
   return (
-    <div className="flex flex-col items-center text-black pt-11">
+    <div className="flex flex-col items-center justify-center text-black pt-11 h-screen">
       {currentPet ? (
         <Draggable nodeRef={nodeRef} onStop={onDragStop} position={{ x: 0, y: 0 }}>
           <div
             ref={nodeRef}
-            className="relative w-[300px] h-[450px] shadow-lg shadow-primary bg-secondary rounded-xl"
+            className="relative w-[350px] h-[570px] shadow-lg bg-secondary rounded-2xl"
           >
             <div
               {...swipeHandlers}
               ref={cardRef}
-              className={`rounded-xl bg-white overflow-hidden ${animationClass}`}
+              className={`rounded-2xl bg-white overflow-hidden ${animationClass}`}
             >
-              {/* Click vào nửa bên phải hoặc trái để chuyển ảnh */}
+              {/* Image click to switch between images */}
               <div
-                className="relative w-full h-[350px] object-cover cursor-pointer"
+                className="relative w-full h-[570px] object-cover cursor-pointer"
                 onClick={handleImageClick}
               >
                 <img
                   src={currentPet.pet_images?.[currentImageIndex] || 'default-image-url'}
                   alt={currentPet.pet_name || 'No Name'}
-                  className="w-full h-full object-cover"
+                  className="w-[350px] h-[570px] object-cover"
                 />
+                {/* Gradient Overlay */}
+                <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-black via-transparent to-transparent pointer-events-none" />
+                {/* Pet Details Overlay */}
+                <div className="absolute bottom-24 left-4 text-white">
+                  <h3 className="text-xl font-bold">{currentPet.pet_name}</h3>
+                  <div className="flex gap-1 mt-1">
+                    <span className="bg-gray-800 text-yellow-400 px-2 py-1 rounded-md text-xs">
+                      {currentPet.pet_species}
+                    </span>
+                    <span className="bg-gray-800 text-yellow-400 px-2 py-1 rounded-md text-xs">
+                      {currentPet.pet_pricing} VNĐ
+                    </span>
+                  </div>
+                  <div className="mt-2 text-sm">
+                    <p>{currentPet.pet_review.length} reviews ({currentPet.pet_star}⭐)</p>
+                  </div>
+                </div>
+
+                {/* Like / Dislike Buttons */}
+                <div
+                  className="absolute left-8 bottom-6 cursor-pointer"
+                  onClick={() => {
+                    handleSwipe('left');
+                  }}
+                >
+                  <FontAwesomeIcon
+                    icon={faX}
+                    className="text-red-500 bg-white p-4 rounded-full text-3xl shadow-lg hover:bg-gray-200 px-5"
+                  />
+                </div>
+                <div
+                  className="absolute right-8 bottom-6 cursor-pointer"
+                  onClick={() => {
+                    handleSwipe('right');
+                  }}
+                >
+                  <FontAwesomeIcon
+                    icon={faHeart}
+                    className="text-yellow-400 bg-white p-4 rounded-full text-3xl shadow-lg hover:bg-gray-200"
+                  />
+                </div>
               </div>
 
-              <div className="p-4">
-                <h3 className="text-xl font-bold">{currentPet.pet_name}</h3>
-                <p>Type: {currentPet.pet_type}</p>
-                <p>Species: {currentPet.pet_species}</p>
-                <p>Gender: {currentPet.pet_gender}</p>
-                <p>Status: {currentPet.pet_status}</p>
-              </div>
 
-              {/* Like / Dislike */}
-              <div
-                className="absolute left-0 top-1/2 transform -translate-y-1/2 cursor-pointer"
-                onClick={() => {
-                  handleSwipe('left'); // Tương đương với swipe trái
-                }}
-              >
-                <FontAwesomeIcon
-                  icon={faX}
-                  className="text-red-700 bg-primary p-2 rounded-full responsive-text hover:text-primary hover:bg-secondary"
-                />
-              </div>
-              <div
-                className="absolute right-0 top-1/2 transform -translate-y-1/2 cursor-pointer"
-                onClick={() => {
-                  handleSwipe('right'); // Tương đương với swipe phải
-                }}
-              >
-                <FontAwesomeIcon
-                  icon={faHeart}
-                  className="text-yellow-500 bg-primary p-2 rounded-full responsive-text hover:text-primary hover:bg-secondary"
-                />
-              </div>
             </div>
           </div>
         </Draggable>
       ) : (
         <p>No pets found.</p>
       )}
-
-      {/* Swipe logs */}
-      <div className="mt-4 w-[300px] bg-gray-100 p-4 rounded-lg shadow-md">
-        <h4 className="font-bold mb-2">Swipe Logs</h4>
-        {swipeLogs.length === 0 ? (
-          <p>No swipes yet.</p>
-        ) : (
-          <ul className="list-disc pl-5">
-            {swipeLogs.map((log, index) => (
-              <li key={index} className="text-sm">{log}</li>
-            ))}
-          </ul>
-        )}
-      </div>
     </div>
   );
 }
