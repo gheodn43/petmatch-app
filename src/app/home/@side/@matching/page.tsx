@@ -74,34 +74,42 @@ const MatchingSection: React.FC = () => {
     };
 
     const handleChatClick = (roomId: string) => {
-        router.push(`/chat/${roomId}`);
+        const screenWidth = window.innerWidth;
+        const mdBreakpoint = 768; // Kích thước màn hình "md"
+        if (screenWidth < mdBreakpoint) {
+            location.assign(`/chat/${roomId}`);
+        } else {
+            router.push(`/chat/${roomId}`);
+            console.log(`Chat with room: ${roomId}`);
+        }
     };
     return (
-        <div className="grid grid-cols-3 gap-4 p-4">
+        <div className="p-4 mt-16 md:mt-0">
             {matched && matched.length > 0 ? (
-                matched.map((match) => (
-                    <div
-                        key={match.room_id}
-                        className="relative group border-2 border-gray-300 rounded-lg p-1 transition-all duration-300 transform hover:scale-110 hover:border-yellow-400"
-                        onClick={() => handleChatClick(match.room_id)}
-                    >
-                        <img
-                            src={match.partner_avatar}
-                            alt={match.partner_name}
-                            className="w-24 h-28 object-cover rounded-lg"
-                        />
-                        <div className="absolute bottom-2 left-2">
-                            <h3 className="text-white text-sm font-bold">{match.partner_name}</h3>
+                <div className="flex flex-wrap gap-4">
+                    {matched.map((match) => (
+                        <div
+                            key={match.room_id}
+                            className="relative group border-2 border-gray-300 rounded-lg p-1 transition-all duration-300 transform hover:scale-110 hover:border-yellow-400 w-28 md:w-32 xl:w-28"
+                            onClick={() => handleChatClick(match.room_id)}
+                        >
+                            <img
+                                src={match.partner_avatar}
+                                alt={match.partner_name}
+                                className="w-full h-32 md:h-44 xl:h-36 object-cover rounded-lg"
+                            />
+                            <div className="absolute bottom-2 left-2">
+                                <h3 className="text-white text-sm font-bold">{match.partner_name}</h3>
+                            </div>
                         </div>
-                    </div>
-                ))
+                    ))}
+                </div>
             ) : (
                 <div className="col-span-3 text-center text-gray-500">
                     Chưa có tương hợp nào
                 </div>
             )}
         </div>
-
     );
 };
 

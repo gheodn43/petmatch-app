@@ -95,10 +95,10 @@ const ChatPage: React.FC = () => {
     };
     const handleBack = () => {
         router.back(); // Quay lại trang trước đó
-      };
+      }
     return (
-        <div className="flex flex-col">
-            <div className='flex space-x-4 bg-white py-3 px-6 fixed top-16 left-[25%] sm:left-[30%] md:left-[32%] lg:left-[20%] xl:left-[18%] right-0'>
+        <div className="flex flex-col py-16">
+            <div className='flex space-x-4 bg-white py-3 px-6 fixed top-16 left-0 md:left-[325px] lg:left-[350px] xl:left-[400px] right-0'>
                 <FontAwesomeIcon icon={faArrowLeft} className='text-gray-400 cursor-pointer text-lg' onClick={handleBack}/> 
             </div>
             <div className='overflow-hidden'>
@@ -123,7 +123,7 @@ const ChatPage: React.FC = () => {
                     </div>
                 )}
             </div>
-            <div className="fixed bottom-0 left-[25%] sm:left-[30%] md:left-[32%] lg:left-[20%] xl:left-[18%] right-0 z-10 p-4 bg-gray-50 flex">
+            <div className="fixed bottom-0 left-0 md:left-[325px] lg:left-[350px] xl:left-[400px] right-0 z-10 p-4 bg-gray-50 flex">
                 <button
                     onClick={sendMessage}
                     className={`mr-2 p-2 pl-8 pr-8 text-center rounded ${isSending ? 'bg-gray-500 text-white' : 'border-secondary text-gray-500 bg-primary border-2 flex items-center justify-center'}`}

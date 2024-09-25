@@ -113,7 +113,7 @@ export default function PetCard() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center text-black pt-11 h-screen">
+    <div className="flex flex-col items-center text-black py-16">
       {currentPet ? (
         <Draggable nodeRef={nodeRef} onStop={onDragStop} position={{ x: 0, y: 0 }}>
           <div
