@@ -1,6 +1,5 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { DynamoDBClient, QueryCommand } from '@aws-sdk/client-dynamodb';
-//import { getUserIdFromCookie } from '@/utils/authUtils';
 import { decodedToken } from '@/utils/decodeToken';
 import { PetOverviewDto } from '@/app/model/pet';
 
@@ -20,16 +19,12 @@ export async function GET(req: NextRequest) {
       },
     };
     const { Items } = await dynamoDB.send(new QueryCommand(queryParams));
-
-    console.log('DynamoDB Items:', Items);
-
     if (!Items || Items.length === 0) {
       return NextResponse.json({ message: 'No pets found for this user.' }, { status: 404 });
     }
 
     const pets = Items.map((item) => {
       const petImages = item.pet_images?.L?.map(image => image.S ?? '') || [];
-      console.log('Pet Images:', petImages);
       return new PetOverviewDto({
         pet_id: item.pet_id.S ?? '',
         pet_name: item.pet_name.S ?? '',

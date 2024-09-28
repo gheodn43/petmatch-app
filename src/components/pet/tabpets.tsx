@@ -20,10 +20,8 @@ const TabPets: React.FC<TabPetsProps> = ({ pets }) => {
     const fetchSelectedPets = async () => {
       const selected = await dbPet.selected.toArray();
       setSelectedPets(selected);
-
-      // Nếu không có bản ghi nào, thêm pet đầu tiên với trạng thái 'active'
       if (selected.length === 0 && pets.length > 0) {
-        await dbPet.selected.add({ ...pets[0], pet_status: 'active' });
+        await handleSelectPet(pets[0]);
       }
     };
 
@@ -52,12 +50,10 @@ const TabPets: React.FC<TabPetsProps> = ({ pets }) => {
   };
 
   const isFreeUserAndMaxPetReached = user_role === 'free' && pets.length >= 1;
-
   return (
-    <div className="flex items-center space-x-2 h-16 p-4 border-b-2 border-solid border-tertiary">
+    <div className="flex items-center space-x-2 h-16 p-4 border-b-2 border-solid border-tertiary bg-white">
       {pets.map((pet) => {
         const isSelected = selectedPets.some(selectedPet => selectedPet.pet_id === pet.pet_id);
-
         return (
           <div
             key={pet.pet_id}
@@ -67,20 +63,19 @@ const TabPets: React.FC<TabPetsProps> = ({ pets }) => {
             <img
               src={pet.pet_image}
               alt={pet.pet_name}
-              className={`h-10 w-10 rounded-full object-cover `}
+              className={`h-10 w-10 rounded-full object-cover`}
             />
           </div>
         );
       })}
-      
       <div className="flex flex-col items-center justify-center">
         {isFreeUserAndMaxPetReached ? (
           <button
             className="h-10 px-5 flex items-center justify-center rounded-full bg-gradient-to-r from-secondary to-pink-500"
             onClick={handleOpenMembershipPkgs}
           >
-            <FontAwesomeIcon icon={faCrown} className="text-white mr-2"/>
-            <p className='text-white font-bold'>Upgrade</p>
+            <FontAwesomeIcon icon={faCrown} className="text-white mr-2" />
+            <p className="text-white font-bold">Upgrade</p>
           </button>
         ) : (
           <button
@@ -93,6 +88,7 @@ const TabPets: React.FC<TabPetsProps> = ({ pets }) => {
       </div>
     </div>
   );
+  
 };
 
 export default TabPets;

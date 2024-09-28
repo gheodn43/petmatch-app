@@ -6,6 +6,7 @@ import { useUser } from '@/providers/UserContext';
 
 export default function SideHeader() {
     const user = useUser();
+    console.log(user.user_image)
     return (
         <div className="flex justify-between items-center bg-gradient-to-r from-secondary to-yellow-300 h-16 p-4 cursor-pointer">
             <div className="flex items-center space-x-4 rounded-full hover:bg-primary/35 py-1 pl-1 pr-4">

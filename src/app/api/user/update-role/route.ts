@@ -45,8 +45,6 @@ export async function POST(request: NextRequest) {
     };
 
     await dynamoDB.send(new UpdateItemCommand(updateParams));
-    console.log(updateParams)
-    // Cập nhật cookie user_info chỉ với user_role
     const userInfoCookie = request.cookies.get('user_info');
     if (userInfoCookie) {
       const userInfo = JSON.parse(userInfoCookie.value);
@@ -62,7 +60,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: 'Thông tin người dùng không tồn tại trong cookie.' }, { status: 400 });
     }
   } catch (error) {
-    console.error('Error:', error);
     return NextResponse.json({ message: 'Error updating role.' }, { status: 500 });
   }
 }

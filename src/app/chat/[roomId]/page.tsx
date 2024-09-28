@@ -1,10 +1,12 @@
 'use client';
 import React, { useEffect, useState, useRef } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import axios from 'axios';
 import { pusherClient } from '@/lib/pusher'; // Pusher client
 import { Message } from '@/app/model/message';
 import { dbPet } from '@/localDB/pet.db';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 
 const ChatPage: React.FC = () => {
     const { roomId } = useParams();
@@ -14,7 +16,7 @@ const ChatPage: React.FC = () => {
     const messagesEndRef = useRef<HTMLDivElement>(null); // Ref để tự động cuộn xuống khi có tin nhắn mới
     const [isSending, setIsSending] = useState(false);  // Trạng thái khi tin nhắn đang được gửi
     const [loadingMessages, setLoadingMessages] = useState(true); // Trạng thái khi đang tải tin nhắn
-
+    const router = useRouter();
     // Cuộn xuống khi có tin nhắn mới
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -46,7 +48,7 @@ const ChatPage: React.FC = () => {
         fetchMessages();
 
         const channel = pusherClient.subscribe(`private-chat-${roomId}`);
-        
+
         // Lắng nghe sự kiện new-message
         channel.bind('new-message', (message: Message) => {
             // Kiểm tra nếu tin nhắn đã tồn tại, tránh việc thêm trùng lặp
@@ -90,19 +92,24 @@ const ChatPage: React.FC = () => {
             sendMessage();
         }
     };
-
+    const handleBack = () => {
+        router.back(); // Quay lại trang trước đó
+      }
     return (
         <div className="flex flex-col h-screen">
+            <div className='flex space-x-4 bg-white py-3 px-6 fixed top-0 left-0 right-0'>
+                <FontAwesomeIcon icon={faArrowLeft} className='text-gray-400 cursor-pointer text-lg' onClick={handleBack}/> 
+            </div>
             {loadingMessages ? (
-                <div className="flex-grow p-4 bg-gray-100 flex items-center justify-center">
+                <div className="flex-grow p-4 bg-white flex items-center justify-center">
                     <p className="text-gray-500">Đang tải tin nhắn...</p>
                 </div>
             ) : (!messages || messages.length === 0) ? (
-                <div className="flex-grow p-4 bg-gray-100 flex items-center justify-center">
+                <div className="flex-grow p-4 bg-white flex items-center justify-center">
                     <p className="text-gray-500">Không có tin nhắn nào để hiển thị.</p>
                 </div>
             ) : (
-                <div className="flex-grow overflow-y-auto p-4 bg-gray-100">
+                <div className="flex-grow overflow-y-auto p-4 bg-white">
                     {messages.map((msg) => (
                         <div key={msg.id} className={`mb-2 flex ${msg.senderId === petInfo.pet_id ? 'justify-end' : 'justify-start'}`}>
                             <div className={`p-2 rounded-lg shadow ${msg.senderId === petInfo.pet_id ? ' bg-[#FFD971] text-gray-900' : 'bg-[#FFF9E4] text-gray-900'}`}>
@@ -113,7 +120,14 @@ const ChatPage: React.FC = () => {
                     <div ref={messagesEndRef} />
                 </div>
             )}
-            <div className="p-4 bg-white flex">
+            <div className="p-4 bg-primary flex">
+                <button
+                    onClick={sendMessage}
+                    className={`mr-2 p-2 pl-8 pr-8 text-center rounded ${isSending ? 'bg-gray-500 text-white' : 'border-secondary text-gray-500 bg-primary border-2 flex items-center justify-center'}`}
+                    disabled={isSending}  // Disable khi đang gửi tin nhắn
+                >
+                    {isSending ? 'Đang gửi...' : 'Gửi'}
+                </button>
                 <input
                     type="text"
                     value={newMessage}
@@ -123,13 +137,6 @@ const ChatPage: React.FC = () => {
                     placeholder="Nhập tin nhắn..."
                     disabled={isSending}  // Disable khi đang gửi tin nhắn
                 />
-                <button
-                    onClick={sendMessage}
-                    className={`ml-2 p-2 pl-8 pr-8 text-center rounded ${isSending ? 'bg-gray-500 text-white' : 'border-secondary text-gray-500 bg-primary border-2 flex items-center justify-center'}`}
-                    disabled={isSending}  // Disable khi đang gửi tin nhắn
-                >
-                    {isSending ? 'Đang gửi...' : 'Gửi'}
-                </button>
             </div>
         </div>
     );

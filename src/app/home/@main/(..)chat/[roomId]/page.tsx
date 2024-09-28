@@ -1,19 +1,22 @@
 'use client';
 import React, { useEffect, useState, useRef } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import axios from 'axios';
-import { pusherClient } from '@/lib/pusher'; // Pusher client
+import { pusherClient } from '@/lib/pusher';
 import { Message } from '@/app/model/message';
 import { dbPet } from '@/localDB/pet.db';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 
 const ChatPage: React.FC = () => {
     const { roomId } = useParams();
     const [messages, setMessages] = useState<Message[]>([]);
     const [newMessage, setNewMessage] = useState<string>('');
     const [petInfo, setPetInfo] = useState({ pet_id: '', pet_name: '' });
-    const messagesEndRef = useRef<HTMLDivElement>(null); // Ref để tự động cuộn xuống khi có tin nhắn mới
-    const [isSending, setIsSending] = useState(false);  // Trạng thái khi tin nhắn đang được gửi
-    const [loadingMessages, setLoadingMessages] = useState(true); // Trạng thái khi đang tải tin nhắn
+    const messagesEndRef = useRef<HTMLDivElement>(null);
+    const [isSending, setIsSending] = useState(false);
+    const [loadingMessages, setLoadingMessages] = useState(true);
+    const router = useRouter();
 
     // Cuộn xuống khi có tin nhắn mới
     const scrollToBottom = () => {
@@ -46,7 +49,7 @@ const ChatPage: React.FC = () => {
         fetchMessages();
 
         const channel = pusherClient.subscribe(`private-chat-${roomId}`);
-        
+
         // Lắng nghe sự kiện new-message
         channel.bind('new-message', (message: Message) => {
             // Kiểm tra nếu tin nhắn đã tồn tại, tránh việc thêm trùng lặp
@@ -90,49 +93,57 @@ const ChatPage: React.FC = () => {
             sendMessage();
         }
     };
-
+    const handleBack = () => {
+        router.back(); // Quay lại trang trước đó
+      }
     return (
-        <div className="flex flex-col h-screen">
-            {loadingMessages ? (
-                <div className="flex-grow p-4 bg-gray-100 flex items-center justify-center">
-                    <p className="text-gray-500">Đang tải tin nhắn...</p>
-                </div>
-            ) : (!messages || messages.length === 0) ? (
-                <div className="flex-grow p-4 bg-gray-100 flex items-center justify-center">
-                    <p className="text-gray-500">Không có tin nhắn nào để hiển thị.</p>
-                </div>
-            ) : (
-                <div className="flex-grow overflow-y-auto p-4 bg-gray-100">
-                    {messages.map((msg) => (
-                        <div key={msg.id} className={`mb-2 flex ${msg.senderId === petInfo.pet_id ? 'justify-end' : 'justify-start'}`}>
-                            <div className={`p-2 rounded-lg shadow ${msg.senderId === petInfo.pet_id ? ' bg-[#FFD971] text-gray-900' : 'bg-[#FFF9E4] text-gray-900'}`}>
-                                <div className="text-sm">{msg.content}</div>
+        <div className="flex flex-col py-16">
+            <div className='flex space-x-4 bg-white py-3 px-6 fixed top-16 left-0 md:left-[325px] lg:left-[350px] xl:left-[400px] right-0'>
+                <FontAwesomeIcon icon={faArrowLeft} className='text-gray-400 cursor-pointer text-lg' onClick={handleBack}/> 
+            </div>
+            <div className='overflow-hidden'>
+                {loadingMessages ? (
+                    <div className="flex-grow p-4 bg-white flex items-center justify-center">
+                        <p className="text-gray-500">Đang tải tin nhắn...</p>
+                    </div>
+                ) : (!messages || messages.length === 0) ? (
+                    <div className="flex-grow p-4 bg-white flex items-center justify-center">
+                        <p className="text-gray-500">Không có tin nhắn nào để hiển thị.</p>
+                    </div>
+                ) : (
+                    <div className="flex-grow overflow-y-auto p-4 bg-white">
+                        {messages.map((msg) => (
+                            <div key={msg.id} className={`mb-2 flex ${msg.senderId === petInfo.pet_id ? 'justify-end' : 'justify-start'}`}>
+                                <div className={`p-2 rounded-lg shadow ${msg.senderId === petInfo.pet_id ? ' bg-[#FFD971] text-gray-900' : 'bg-[#FFF9E4] text-gray-900'}`}>
+                                    <div className="text-sm">{msg.content}</div>
+                                </div>
                             </div>
-                        </div>
-                    ))}
-                    <div ref={messagesEndRef} />
-                </div>
-            )}
-            <div className="p-4 bg-white flex">
+                        ))}
+                        <div ref={messagesEndRef} />
+                    </div>
+                )}
+            </div>
+            <div className="fixed bottom-0 left-0 md:left-[325px] lg:left-[350px] xl:left-[400px] right-0 z-10 p-4 bg-gray-50 flex">
+                <button
+                    onClick={sendMessage}
+                    className={`mr-2 p-2 pl-8 pr-8 text-center rounded ${isSending ? 'bg-gray-500 text-white' : 'border-secondary text-gray-500 bg-primary border-2 flex items-center justify-center'}`}
+                    disabled={isSending}
+                >
+                    {isSending ? 'Đang gửi...' : 'Gửi'}
+                </button>
                 <input
                     type="text"
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyDown={handleKeyDown}  // Bắt sự kiện khi nhấn phím
+                    onKeyDown={handleKeyDown}
                     className="flex-grow border border-gray-300 rounded p-2 text-gray-900"
                     placeholder="Nhập tin nhắn..."
-                    disabled={isSending}  // Disable khi đang gửi tin nhắn
+                    disabled={isSending}
                 />
-                <button
-                    onClick={sendMessage}
-                    className={`ml-2 p-2 pl-8 pr-8 text-center rounded ${isSending ? 'bg-gray-500 text-white' : 'border-secondary text-gray-500 bg-primary border-2 flex items-center justify-center'}`}
-                    disabled={isSending}  // Disable khi đang gửi tin nhắn
-                >
-                    {isSending ? 'Đang gửi...' : 'Gửi'}
-                </button>
             </div>
         </div>
     );
+
 };
 
 export default ChatPage;

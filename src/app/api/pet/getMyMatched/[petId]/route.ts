@@ -1,31 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { DynamoDBClient, QueryCommand } from '@aws-sdk/client-dynamodb';
-//import { getUserIdFromCookie } from '@/utils/authUtils';
 import { MatchedItem } from '@/app/model/petMatchedItem';
 import { decodedToken } from '@/utils/decodeToken';
 
 const dynamoDB = new DynamoDBClient({});
 
-export async function GET(req: NextRequest) {
-    const accessToken = req.cookies.get('access_token')?.value;
-    if (!accessToken) return NextResponse.json({ message: 'Access token is missing.' }, { status: 401 });
-    const userId = await decodedToken(accessToken);
-    if (!userId) return NextResponse.json({ message: 'Invalid Access Token' }, { status: 401 });
+export async function GET(req: NextRequest, { params }: { params: { petId: string } }) {
+    // const accessToken = req.cookies.get('access_token')?.value;
+    // if (!accessToken) return NextResponse.json({ message: 'Access token is missing.' }, { status: 401 });
+    // const userId = await decodedToken(accessToken);
+    // if (!userId) return NextResponse.json({ message: 'Invalid Access Token' }, { status: 401 });
+    const { petId } = params;
     try {
         const paramsA = {
             TableName: 'petmatch-chat-room',
-            IndexName: 'GSI_OwnerA', 
-            KeyConditionExpression: 'ownerA_id = :userId',
+            IndexName: 'GSI_PetA', 
+            KeyConditionExpression: 'petA_id = :petId',
             ExpressionAttributeValues: {
-                ':userId': { S: userId }
+                ':petId': { S: petId }
             },
         };
         const paramsB = {
             TableName: 'petmatch-chat-room',
-            IndexName: 'GSI_OwnerB', 
-            KeyConditionExpression: 'ownerB_id = :userId',
+            IndexName: 'GSI_PetB', 
+            KeyConditionExpression: 'petB_id = :petId',
             ExpressionAttributeValues: {
-                ':userId': { S: userId }
+                ':petId': { S: petId }
             },
         };
 
@@ -37,14 +37,14 @@ export async function GET(req: NextRequest) {
         const matched: Array<MatchedItem> = [];
         const processedRoomIds = new Set<string>(); 
 
-        // Xử lý dữ liệu từ ownerA
+
         if (dataA.Items) {
             for (const item of dataA.Items) {
                 const roomId = item.room_id.S!;
                 if (!processedRoomIds.has(roomId)) {
-                    console.log('chua xu ly')
                     matched.push({
                         room_id: roomId,
+                        pet_id: petId,
                         partner_id: item.ownerB_id.S!, // Đảm bảo không phải undefined
                         partner_avatar: item.petB_avatar.S!,
                         partner_name: item.petB_name.S!,  // Đảm bảo không phải undefined
@@ -55,13 +55,14 @@ export async function GET(req: NextRequest) {
             }
         }
 
-        // Xử lý dữ liệu từ ownerB
+
         if (dataB.Items) {
             for (const item of dataB.Items) {
                 const roomId = item.room_id.S!;
                 if (!processedRoomIds.has(roomId)) {
                     matched.push({
                         room_id: roomId,
+                        pet_id: petId,
                         partner_id: item.ownerA_id.S!, // Đảm bảo không phải undefined
                         partner_avatar: item.petA_avatar.S!,
                         partner_name: item.petA_name.S!, // Đảm bảo không phải undefined
