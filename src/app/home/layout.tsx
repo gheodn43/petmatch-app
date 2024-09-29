@@ -48,7 +48,7 @@ export default function MainPageLayout({
                     <TabPets pets={pets} />
                 </div>
                 {children}
-                <div className="md:hidden fixed bottom-0 left-0 right-0 bg-gray-800 text-white flex justify-around p-4">
+                <div className="md:hidden fixed bottom-0 left-0 right-0 bg-gray-800 text-white flex justify-around h-16">
                     <button
                         className={`flex-1 text-center py-2 cursor-pointer ${activeView === 'main' ? 'bg-gray-600' : ''}`}
                         onClick={() => setActiveView('main')}
@@ -69,7 +69,7 @@ export default function MainPageLayout({
                     </div>
 
                     {/* Main view */}
-                    <div className={`bg-white overflow-y-auto h-full pt-16 ${activeView === 'main' ? 'flex-1' : 'hidden'} md:block md:flex-1`}>
+                    <div className={`bg-white overflow-y-auto h-full py-16 ${activeView === 'main' ? 'flex-1' : 'hidden'} md:block md:flex-1`}>
                         {main}
                     </div>
                 </div>

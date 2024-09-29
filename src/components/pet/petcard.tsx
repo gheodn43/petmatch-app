@@ -40,10 +40,10 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart, faX } from '@fortawesome/free-solid-svg-icons';
 import { useSwipeable } from 'react-swipeable';
 import Draggable from 'react-draggable';
-import petData from '@/components/pet/virtual_res_card.json'; // Dummy pet data
+import petData from '@/components/pet/virtual_res_card.json'; 
 
 export default function PetCard() {
-  const [currentIndex, setCurrentIndex] = useState(0); // Index của pet hiện tại
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [currentImageIndex, setCurrentImageIndex] = useState(0); // Index của ảnh hiện tại của pet
   const [swipeLogs, setSwipeLogs] = useState<string[]>([]);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -113,27 +113,26 @@ export default function PetCard() {
   };
 
   return (
-    <div className="flex flex-col items-center text-black py-16">
+    <div className="flex flex-col items-center justify-center text-black h-full md:py-16">
       {currentPet ? (
         <Draggable nodeRef={nodeRef} onStop={onDragStop} position={{ x: 0, y: 0 }}>
           <div
             ref={nodeRef}
-            className="relative w-[350px] h-[570px] shadow-lg bg-secondary rounded-2xl"
+            className="relative w-full md:w-[350px] h-full md:h-auto shadow-lg bg-secondary md:rounded-2xl"
           >
             <div
               {...swipeHandlers}
               ref={cardRef}
-              className={`rounded-2xl bg-white overflow-hidden ${animationClass}`}
+              className={` bg-white overflow-hidden ${animationClass} h-full md:h-auto md:rounded-2xl `}
             >
-              {/* Image click to switch between images */}
               <div
-                className="relative w-full h-[570px] object-cover cursor-pointer"
+                className="cursor-pointer h-full "
                 onClick={handleImageClick}
               >
                 <img
                   src={currentPet.pet_images?.[currentImageIndex] || 'default-image-url'}
                   alt={currentPet.pet_name || 'No Name'}
-                  className="w-[350px] h-[570px] object-cover"
+                  className="w-full lg:w-[350px] object-contain"
                 />
                 {/* Gradient Overlay */}
                 <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-black via-transparent to-transparent pointer-events-none" />

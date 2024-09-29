@@ -10,6 +10,8 @@ const GoogleOAuth: React.FC = () => {
         if (credentialResponse?.credential) {
             try {
                 await dbPet.pet.clear();
+                await dbPet.matched.clear();
+                await dbPet.selected.clear();
                 const response = await fetch('/api/auth/login', {
                     method: 'POST',
                     headers: {
@@ -19,7 +21,6 @@ const GoogleOAuth: React.FC = () => {
                 });
 
                 if (response.ok) {
-                    // Xử lý phản hồi từ API và chuyển hướng người dùng
                     router.push('/home');
                 } else {
                     console.error('Login failed', await response.json());

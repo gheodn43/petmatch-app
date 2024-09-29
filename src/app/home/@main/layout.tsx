@@ -2,7 +2,7 @@
 import React from 'react';
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
-      <div className='pt-27-20'>
+      <div className='h-full'>
         {children}
       </div>
   );
