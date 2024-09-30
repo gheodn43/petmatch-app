@@ -34,16 +34,16 @@ export async function GET(req: NextRequest, { params }: { params: { petId: strin
         if (!petType || !petGender) {
             return NextResponse.json({ message: 'Pet type or gender missing' }, { status: 400 });
         }
-
+        const partnerGender = petGender === 'Male' ? 'Female' : 'Male';
         const getRecommendedParams = {
             TableName: 'petmatch-pets',
             IndexName: 'pet_type-gender-index', // GSI cho pet_type và pet_gender
             KeyConditionExpression: 'pet_type = :petType and pet_gender = :petGender',
             ExpressionAttributeValues: {
                 ':petType': { S: petType },
-                ':petGender': { S: petGender },
+                ':petGender': { S: partnerGender },
             },
-            Limit: 20,  // Fetch more results to filter afterward
+            Limit: 20,
         };
 
         const recommendedPetsResponse = await dynamoDB.send(new QueryCommand(getRecommendedParams));
@@ -96,7 +96,6 @@ export async function GET(req: NextRequest, { params }: { params: { petId: strin
                 pet_review: petReview  // Cập nhật đúng cấu trúc Reviewing
             });
         });
-        console.log(pets)
         return NextResponse.json({ rcmPets: pets }, { status: 200 });
     } catch (error) {
         console.error('Error in getRcms handler:', error);
