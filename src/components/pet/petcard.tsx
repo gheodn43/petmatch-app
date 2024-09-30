@@ -35,22 +35,69 @@
 
 
 'use client';
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
+import { RcmPetDto } from '@/app/model/pet';
+import { dbPet } from '@/localDB/pet.db';
+import { useLiveQuery } from 'dexie-react-hooks';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart, faX } from '@fortawesome/free-solid-svg-icons';
 import { useSwipeable } from 'react-swipeable';
 import Draggable from 'react-draggable';
-import petData from '@/components/pet/virtual_res_card.json'; 
+import petData from '@/components/pet/virtual_res_card.json';
+import axios from 'axios';
 
 export default function PetCard() {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0); // Index của ảnh hiện tại của pet
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [swipeLogs, setSwipeLogs] = useState<string[]>([]);
   const cardRef = useRef<HTMLDivElement>(null);
-  const nodeRef = useRef(null); // Ref để sử dụng với Draggable
+  const nodeRef = useRef(null);
 
-  const [pets, setPets] = useState(petData.pets);
   const [animationClass, setAnimationClass] = useState<string>('');
+  //const [pets, setPets] = useState(petData.pets);
+  const [pets, setPets] = useState<RcmPetDto[]>([]); 
+  const selectedPets = useLiveQuery(() => dbPet.selected.toArray(), []);
+  const firstSelectedPet = selectedPets?.[0];
+  const rcms = useLiveQuery<RcmPetDto[]>(
+    () => firstSelectedPet
+      ? dbPet.rcm
+        .where({ pet_id: firstSelectedPet.pet_id })
+        .first()
+        .then(record => record?.recommended_pets ?? [])
+      : Promise.resolve([]),
+    [firstSelectedPet]
+  );
+
+  useEffect(() => {
+    const fetchRcm = async () => {
+      if (firstSelectedPet) {
+        const petId = firstSelectedPet.pet_id;
+        const existingRecord = await dbPet.rcm.where('pet_id').equals(petId).first();
+        if (existingRecord) {
+          return; // Nếu đã có, bỏ qua phần còn lại của useEffect
+        }
+        try {
+          const response = await axios.get(`/api/pet/getRcms/${petId}`);
+          const rcmPets = response.data.rcmPets;
+          await dbPet.rcm.add({
+            pet_id: petId,
+            recommended_pets: rcmPets, // Lưu danh sách recommended pets vào bảng
+          });
+        } catch (error) {
+          console.error('Error fetching recommended pets:', error);
+        }
+      }
+    };
+
+    fetchRcm();
+  }, [firstSelectedPet]);
+
+  useEffect(() => {
+    if (rcms && rcms.length >0 ) {
+      setPets(rcms);
+      console.log(pets)
+    }
+  }, [rcms]);
 
   const handleSwipe = useCallback((direction: string) => {
     const log = direction === 'right' ? 'like' : 'dislike';
@@ -114,70 +161,36 @@ export default function PetCard() {
 
   return (
     <div className="flex flex-col items-center justify-center text-black h-full md:py-16">
-      {currentPet ? (
+      {rcms && rcms.length > 0 ? (
         <Draggable nodeRef={nodeRef} onStop={onDragStop} position={{ x: 0, y: 0 }}>
-          <div
-            ref={nodeRef}
-            className="relative w-full md:w-[350px] h-full md:h-auto shadow-lg bg-secondary md:rounded-2xl"
-          >
-            <div
-              {...swipeHandlers}
-              ref={cardRef}
-              className={` bg-white overflow-hidden ${animationClass} h-full md:h-auto md:rounded-2xl `}
-            >
-              <div
-                className="cursor-pointer h-full "
-                onClick={handleImageClick}
-              >
-                <img
-                  src={currentPet.pet_images?.[currentImageIndex] || 'default-image-url'}
-                  alt={currentPet.pet_name || 'No Name'}
-                  className="w-full lg:w-[350px] object-contain"
-                />
-                {/* Gradient Overlay */}
+          <div ref={nodeRef} className="relative w-full md:w-[350px] h-full md:h-auto shadow-lg bg-secondary md:rounded-2xl">
+            <div {...swipeHandlers} ref={cardRef} className={`bg-white overflow-hidden ${animationClass} h-full md:h-auto md:rounded-2xl`}>
+              <div className="cursor-pointer h-full" onClick={handleImageClick}>
+                {currentPet ? ( // Add this check
+                  <img
+                    src={currentPet.pet_images?.[currentImageIndex] || 'default-image-url'}
+                    alt={currentPet.pet_name || 'No Name'}
+                    className="w-full lg:w-[350px] object-contain"
+                  />
+                ) : (
+                  <p>No pet information available.</p> // Fallback if currentPet is not defined
+                )}
                 <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-black via-transparent to-transparent pointer-events-none" />
-                {/* Pet Details Overlay */}
                 <div className="absolute bottom-24 left-4 text-white">
-                  <h3 className="text-xl font-bold">{currentPet.pet_name}</h3>
+                  <h3 className="text-xl font-bold">{currentPet?.pet_name || 'No Name'}</h3>
                   <div className="flex gap-1 mt-1">
-                    <span className="bg-gray-800 text-yellow-400 px-2 py-1 rounded-md text-xs">
-                      {currentPet.pet_species}
-                    </span>
-                    <span className="bg-gray-800 text-yellow-400 px-2 py-1 rounded-md text-xs">
-                      {currentPet.pet_pricing} VNĐ
-                    </span>
+                    <span className="bg-gray-800 text-yellow-400 px-2 py-1 rounded-md text-xs">{currentPet?.pet_species}</span>
+                    <span className="bg-gray-800 text-yellow-400 px-2 py-1 rounded-md text-xs">{currentPet?.pet_pricing} VNĐ</span>
                   </div>
-                  <div className="mt-2 text-sm">
-                    <p>{currentPet.pet_review.length} reviews ({currentPet.pet_star}⭐)</p>
-                  </div>
+                  <div className="mt-2 text-sm"><p>{currentPet?.pet_review.length} reviews ({currentPet?.pet_star}⭐)</p></div>
                 </div>
-
-                {/* Like / Dislike Buttons */}
-                <div
-                  className="absolute left-8 bottom-6 cursor-pointer"
-                  onClick={() => {
-                    handleSwipe('left');
-                  }}
-                >
-                  <FontAwesomeIcon
-                    icon={faX}
-                    className="text-red-500 bg-white p-4 rounded-full text-3xl shadow-lg hover:bg-gray-200 px-5"
-                  />
+                <div className="absolute left-8 bottom-6 cursor-pointer" onClick={() => { handleSwipe('left') }}>
+                  <FontAwesomeIcon icon={faX} className="text-red-500 bg-white p-4 rounded-full text-3xl shadow-lg hover:bg-gray-200 px-5" />
                 </div>
-                <div
-                  className="absolute right-8 bottom-6 cursor-pointer"
-                  onClick={() => {
-                    handleSwipe('right');
-                  }}
-                >
-                  <FontAwesomeIcon
-                    icon={faHeart}
-                    className="text-yellow-400 bg-white p-4 rounded-full text-3xl shadow-lg hover:bg-gray-200"
-                  />
+                <div className="absolute right-8 bottom-6 cursor-pointer" onClick={() => { handleSwipe('right') }}>
+                  <FontAwesomeIcon icon={faHeart} className="text-yellow-400 bg-white p-4 rounded-full text-3xl shadow-lg hover:bg-gray-200" />
                 </div>
               </div>
-
-
             </div>
           </div>
         </Draggable>
@@ -186,4 +199,5 @@ export default function PetCard() {
       )}
     </div>
   );
+  
 }
