@@ -16,6 +16,8 @@ const petTypeOptions = [
 
 export default function AddPetForm() {
     const router = useRouter();
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
 
     const [petInfo, setPetInfo] = useState({
         petType: "",
@@ -75,12 +77,36 @@ export default function AddPetForm() {
 
     const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
+        let newValue = value;
+
+
+        if (name === 'petAge') {
+            const age = parseFloat(value);
+            if (age < 0.5) {
+                newValue = '0.5'; // Đặt giá trị bằng min
+            } else if (age > 9) {
+                newValue = '9'; // Đặt giá trị bằng max
+            }
+        } else if (name === 'birthCount') {
+            const count = parseInt(value);
+            if (count < 0) {
+                newValue = '0'; // Đặt giá trị bằng min
+            } else if (count > 10) {
+                newValue = '10'; // Đặt giá trị bằng max
+            }
+        } else if (name === 'pricing') {
+            // Loại bỏ tất cả các dấu phẩy trước khi xử lý
+            const numericValue = value.replace(/,/g, '');
+
+            // Định dạng lại số với dấu phẩy
+            newValue = new Intl.NumberFormat().format(Number(numericValue));
+        }
+
         setPetInfo(prev => ({
             ...prev,
-            [name]: value
+            [name]: newValue
         }));
     };
-
     const handleGenderChange = (gender: string) => {
         setPetInfo(prev => ({
             ...prev,
@@ -94,7 +120,16 @@ export default function AddPetForm() {
     };
 
     const handleSubmit = async () => {
+        const { petType, petSpecies, petName, petAge, birthCount, gender, pricing, images } = petInfo;
+
+        // Kiểm tra các trường bắt buộc
+        if (!petType || !petSpecies || !petName || !petAge || !birthCount || !gender || (gender === "Male" && !pricing) || images.length === 0) {
+            alert("Vui lòng nhập tất cả các trường bắt buộc!");
+            return;
+        }
+
         try {
+            setIsSubmitting(true); // Bắt đầu quá trình xử lý
             const formData = new FormData();
             formData.append("petType", petInfo.petType);
             formData.append("petSpecies", petInfo.petSpecies);
@@ -104,23 +139,28 @@ export default function AddPetForm() {
             formData.append("gender", petInfo.gender);
             formData.append("pricing", petInfo.pricing);
             petInfo.images.forEach((image) => {
-                formData.append(`images`, image);
+                formData.append("images", image);
             });
             petInfo.certificates.forEach((certificate) => {
-                formData.append(`certificates`, certificate);
+                formData.append("certificates", certificate);
             });
+
             const response = await axios.post('/api/pet/create', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
             });
+
             const petOverview: PetOverviewDto = response.data;
             await dbPet.pet.put(petOverview);
-            router.push('/home')
+            router.push('/home');
         } catch (error) {
             console.error("Error creating pet profile", error);
+        } finally {
+            setIsSubmitting(false);
         }
     };
+
 
     return (
         <div className="flex justify-center items-start h-screen">
@@ -130,17 +170,12 @@ export default function AddPetForm() {
                 </h1>
                 <form className="space-y-6 mt-6">
                     {/* Hàng 1: 2 ô input dạng select-option */}
-                    <div className="flex space-x-4 text-gray-900">
+                    <div className="flex flex-col md:flex-row space-y-6 md:space-x-4 md:space-y-0 text-gray-900">
                         <div className="flex-1">
                             <label htmlFor="petType" className="block text-[#666666] font-semibold text-sm pb-2 ">
                                 Thú cưng của bạn là? <span className="text-[#C71919]">*</span>
                             </label>
-                            <select
-                                id="petType"
-                                name="petType"
-                                className="w-full p-2 border border-gray-300 rounded"
-                                onChange={handleInputChange}
-                                value={petInfo.petType}
+                            <select id="petType" name="petType" className="w-full p-2 border border-gray-300 rounded" onChange={handleInputChange} value={petInfo.petType}
                             >
                                 <option value="" disabled hidden>
                                     Chọn loại thú cưng
@@ -156,12 +191,7 @@ export default function AddPetForm() {
                             <label htmlFor="petSpecies" className="block text-[#666666] font-semibold text-sm pb-2 ">
                                 Giống thú cưng của bạn là? <span className="text-[#C71919]">*</span>
                             </label>
-                            <select
-                                id="petSpecies"
-                                name="petSpecies"
-                                className="w-full p-2 border border-gray-300 rounded"
-                                onChange={handleInputChange}
-                                value={petInfo.petSpecies}
+                            <select id="petSpecies" name="petSpecies" className="w-full p-2 border border-gray-300 rounded" onChange={handleInputChange} value={petInfo.petSpecies}
                             >
                                 <option value="" disabled hidden>
                                     Chọn giống thú cưng
@@ -195,7 +225,7 @@ export default function AddPetForm() {
                     </div>
 
                     {/* Hàng 3: Tuổi và số lần sinh */}
-                    <div className="flex space-x-4">
+                    <div className="flex flex-col md:flex-row md:space-x-4 space-y-4 md:space-y-0">
                         <div className="flex-1">
                             <label htmlFor="petAge" className="block text-[#666666] font-semibold text-sm pb-2 ">
                                 Tuổi của bé là? <span className="text-[#C71919]">*</span>
@@ -208,11 +238,14 @@ export default function AddPetForm() {
                                 className="w-full p-2 border border-gray-300 rounded text-gray-900"
                                 onChange={handleInputChange}
                                 value={petInfo.petAge}
+                                min="0.5"
+                                max="9"
+                                step="0.1"  // Để cho phép nhập các giá trị thập phân
                             />
                         </div>
                         <div className="flex-1">
                             <label htmlFor="birthCount" className="block text-[#666666] font-semibold text-sm pb-2">
-                                Bé đã sinh sản bao nhiêu lần?
+                                Bé đã sinh sản bao nhiêu lần? <span className="text-[#C71919]">*</span>
                             </label>
                             <input
                                 id="birthCount"
@@ -222,68 +255,56 @@ export default function AddPetForm() {
                                 className="w-full p-2 border border-gray-300 rounded text-gray-900"
                                 onChange={handleInputChange}
                                 value={petInfo.birthCount}
+                                min="0"
+                                max="10"
                             />
                         </div>
                     </div>
 
-                    {/* Giới tính và giá */}
-                    <div className="flex items-center space-x-4 text-gray-900">
-                        <div className="flex space-x-4">
-                            <label className="flex items-center justify-center">
-                                <input
-                                    type="radio"
-                                    name="gender"
-                                    value="Male"
-                                    checked={petInfo.gender === "Male"}
-                                    onChange={() => handleGenderChange("Male")}
-                                />
-                                <span className="ml-2">Đực</span>
-                            </label>
-                            <label className="flex items-center justify-center">
-                                <input
-                                    type="radio"
-                                    name="gender"
-                                    value="Female"
-                                    checked={petInfo.gender === "Female"}
-                                    onChange={() => handleGenderChange("Female")}
-                                />
-                                <span className="ml-2">Cái</span>
-                            </label>
-                        </div>
 
-                        {/* Lock Icon with animation */}
-                        {showIcon ? (
-                            <FontAwesomeIcon
-                                icon={faLock}
-                                size="2x"
-                                className="text-gray-400 transform transition-transform duration-500 ease-in-out scale-100"
-                                style={{ transform: showIcon ? 'scale(1)' : 'scale(0)' }}
-                            />
-                        ) : (
-                            <input
-                                type="text"
-                                name="pricing"
-                                placeholder="VNĐ"
-                                className="p-2 border border-gray-300 rounded transform transition-transform duration-500 ease-in-out scale-100"
-                                style={{ transform: showIcon ? 'scale(0)' : 'scale(1)' }}
-                                disabled={petInfo.gender !== "Male"}
-                                onChange={handleInputChange}
-                            />
-                        )}
+                    {/* Giới tính và giá */}
+
+                    <div className="items-center ">
+                        <label className="block text-[#666666] font-semibold text-sm pb-2">
+                            Giới tính <span className="text-[#C71919]">*</span>
+                        </label>
+                        <div className="flex space-x-4 text-gray-900">
+                            <div className="flex space-x-4">
+                                <label className="flex items-center justify-center">
+                                    <input type="radio" name="gender" value="Male" checked={petInfo.gender === "Male"} onChange={() => handleGenderChange("Male")} />
+                                    <span className="ml-2">Đực</span>
+                                </label>
+                                <label className="flex items-center justify-center">
+                                    <input type="radio" name="gender" value="Female" checked={petInfo.gender === "Female"} onChange={() => handleGenderChange("Female")} />
+                                    <span className="ml-2">Cái</span>
+                                </label>
+                            </div>
+
+                            {/* Lock Icon with animation */}
+                            {showIcon ? (
+                                <FontAwesomeIcon icon={faLock} size="2x" className="text-gray-400 transform transition-transform duration-500 ease-in-out scale-100" style={{ transform: showIcon ? 'scale(1)' : 'scale(0)' }} />
+                            ) : (
+                                <input
+                                    type="text"
+                                    name="pricing"
+                                    placeholder="VNĐ"
+                                    className="p-2 border border-gray-300 rounded transform transition-transform duration-500 ease-in-out scale-100"
+                                    style={{ transform: showIcon ? 'scale(0)' : 'scale(1)' }}
+                                    disabled={petInfo.gender !== "Male"}
+                                    onChange={handleInputChange}
+                                    value={petInfo.pricing} // Hiển thị giá trị đã định dạng
+                                />
+                            )}
+                        </div>
                     </div>
 
                     {/* Hình ảnh */}
                     <div>
                         <label className="block text-[#666666] font-semibold text-sm pb-2">
-                            Hình ảnh ({petInfo.images.length}/5)
+                            Hình ảnh ({petInfo.images.length}/5) <span className="text-[#C71919]">*</span>
                         </label>
 
-                        <input
-                            name="images"
-                            type="file"
-                            accept=".png, .jpg, .jpeg"
-                            multiple
-                            className="w-full p-2 border border-gray-300 rounded text-gray-900"
+                        <input name="images" type="file" accept=".png, .jpg, .jpeg" multiple className="w-full p-2 border border-gray-300 rounded text-gray-900"
                             onChange={(e) => {
                                 if (e.target.files && e.target.files.length > 5) {
                                     alert("Bạn chỉ có thể chọn tối đa 5 hình ảnh.");
@@ -361,12 +382,12 @@ export default function AddPetForm() {
                         </div>
                     </div>
 
-                    {/* Nút tạo */}
                     <Button
                         onClick={handleSubmit}
-                        className="w-full p-2 border border-gray-300 rounded bg-gradient-to-r from-[#FFC300] to-[#FEDF79] text-black font-semibold text-2cl"
+                        disabled={isSubmitting} // Vô hiệu hóa nút khi đang submit
+                        className={`w-full p-2 border border-gray-300 rounded bg-gradient-to-r from-[#FFC300] to-[#FEDF79] text-black font-semibold text-2cl ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
-                        Tạo
+                        {isSubmitting ? "Đang tạo..." : "Tạo"}
                     </Button>
                 </form>
             </div>

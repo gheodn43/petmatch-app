@@ -131,6 +131,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         const petAName = pet_name;
         const isMatched = await checkIfAlreadyLiked(petAId, petBId);
         if (isMatched) {
+            await saveLike(petAId, petBId, ownerAId);
             const roomId = await createChatRoom(petAId, petAAavatar, petAName, ownerAId, petBId);
             await notifyPetB(roomId, petAId, petAAavatar, petAName, petBId);
             const matchedItem = new MatchedItem({
