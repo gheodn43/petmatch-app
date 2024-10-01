@@ -170,7 +170,7 @@ export default function AddPetForm() {
                 </h1>
                 <form className="space-y-6 mt-6">
                     {/* Hàng 1: 2 ô input dạng select-option */}
-                    <div className="flex space-x-4 text-gray-900">
+                    <div className="flex flex-col md:flex-row space-y-6 md:space-x-4 md:space-y-0 text-gray-900">
                         <div className="flex-1">
                             <label htmlFor="petType" className="block text-[#666666] font-semibold text-sm pb-2 ">
                                 Thú cưng của bạn là? <span className="text-[#C71919]">*</span>
@@ -225,7 +225,7 @@ export default function AddPetForm() {
                     </div>
 
                     {/* Hàng 3: Tuổi và số lần sinh */}
-                    <div className="flex space-x-4">
+                    <div className="flex flex-col md:flex-row md:space-x-4 space-y-4 md:space-y-0">
                         <div className="flex-1">
                             <label htmlFor="petAge" className="block text-[#666666] font-semibold text-sm pb-2 ">
                                 Tuổi của bé là? <span className="text-[#C71919]">*</span>
