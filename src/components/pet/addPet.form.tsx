@@ -3,7 +3,7 @@ import { useState, useEffect, ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@headlessui/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faLock, faFile, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faLock, faFile, faTrash, faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import { PetOverviewDto } from "@/app/model/pet";
 import { dbPet } from '@/localDB/pet.db';
 import axios from 'axios';
@@ -161,13 +161,20 @@ export default function AddPetForm() {
         }
     };
 
-
+    const handleClickBack = () =>{
+        router.back();
+    }
     return (
-        <div className="flex justify-center items-start h-screen">
+        <div className="flex justify-center items-start pb-20 md:pb-0">
             <div className="w-full max-w-2xl p-4">
-                <h1 className="text-[#FFC629] font-black font-sans tracking-[5px] text-xl flex items-center justify-center">
-                    Thiết lập hồ sơ thú cưng
-                </h1>
+                <div className="flex flex-row items-center justify-between">
+                    <FontAwesomeIcon icon={faArrowLeft} className="text-left text-xl text-gray-400 cursor-pointer" onClick={handleClickBack}/>
+                    <h1 className="font-black font-sans text-secondary tracking-wide text-xl flex-grow text-center">
+                        Thiết Lập Hồ Sơ Thú Cưng
+                    </h1>
+                    <div className="w-5"></div> {/* Khoảng trống bên phải tương ứng */}
+                </div>
+
                 <form className="space-y-6 mt-6">
                     {/* Hàng 1: 2 ô input dạng select-option */}
                     <div className="flex flex-col md:flex-row space-y-6 md:space-x-4 md:space-y-0 text-gray-900">
@@ -282,7 +289,7 @@ export default function AddPetForm() {
 
                             {/* Lock Icon with animation */}
                             {showIcon ? (
-                                <FontAwesomeIcon icon={faLock} size="2x" className="text-gray-400 transform transition-transform duration-500 ease-in-out scale-100" style={{ transform: showIcon ? 'scale(1)' : 'scale(0)' }} />
+                                <FontAwesomeIcon icon={faLock} size="2x" className="text-gray-400 transform transition-transform duration-500 ease-in-out scale-100 z-0" style={{ transform: showIcon ? 'scale(1)' : 'scale(0)' }} />
                             ) : (
                                 <input
                                     type="text"
