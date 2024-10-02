@@ -6,6 +6,7 @@ import { faPlus, faCrown } from '@fortawesome/free-solid-svg-icons';
 import { PetOverviewDto } from '@/app/model/pet';
 import { useUser } from '@/providers/UserContext'; 
 import { dbPet } from '@/localDB/pet.db';
+import { useHomeContext } from '@/providers/HomeContext';
 
 type TabPetsProps = {
   pets: PetOverviewDto[];
@@ -15,6 +16,7 @@ const TabPets: React.FC<TabPetsProps> = ({ pets }) => {
   const { user_role } = useUser();
   const router = useRouter();
   const [selectedPets, setSelectedPets] = React.useState<PetOverviewDto[]>([]);
+  const {setHomeActiveView } = useHomeContext();
 
   useEffect(() => {
     const fetchSelectedPets = async () => {
@@ -29,6 +31,7 @@ const TabPets: React.FC<TabPetsProps> = ({ pets }) => {
   }, [pets]);
 
   const handleOpenCreateNewPet = () => {
+    setHomeActiveView('main');
     router.push('/pet/add-pet');
   };
 
@@ -51,13 +54,13 @@ const TabPets: React.FC<TabPetsProps> = ({ pets }) => {
 
   const isFreeUserAndMaxPetReached = user_role === 'free' && pets.length >= 1;
   return (
-    <div className="flex items-center space-x-2 h-16 p-4 border-b-2 border-solid border-tertiary bg-white">
+    <div className="flex items-center space-x-2 h-16 p-4 border-b-2 border-solid border-tertiary bg-secondary md:bg-white">
       {pets.map((pet) => {
         const isSelected = selectedPets.some(selectedPet => selectedPet.pet_id === pet.pet_id);
         return (
           <div
             key={pet.pet_id}
-            className={`flex flex-col items-center cursor-pointer ${isSelected ? 'border-4 rounded-full border-yellow-500' : ''}`}
+            className={`flex flex-col items-center cursor-pointer ${isSelected ? 'border-4 rounded-full border-primary md:border-yellow-500' : ''}`}
             onClick={() => handleSelectPet(pet)}
           >
             <img

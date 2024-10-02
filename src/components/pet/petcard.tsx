@@ -10,19 +10,25 @@ import { RcmPetDto } from '@/app/model/pet';
 const PetCard: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [pets, setPets] = useState<RcmPetDto[]>([]);
+  const [isChangedLDB, setIsChangedLDB] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isNoRcms, setIsNoRcms] = useState(false);
   const selectedPets = useLiveQuery(() => dbPet.selected.toArray(), []);
   const firstSelectedPet = selectedPets?.[0];
-  const rcms = useLiveQuery<RcmPetDto[]>(
-    () => firstSelectedPet
+  const rcms = useLiveQuery<RcmPetDto[]>(() => 
+    firstSelectedPet
       ? dbPet.rcm
-        .where({ pet_id: firstSelectedPet.pet_id })
-        .first()
-        .then(record => record?.recommended_pets ?? [])
+          .where({ pet_id: firstSelectedPet.pet_id })
+          .first()
+          .then(record => {
+            const recommendedPets = record?.recommended_pets ?? [];
+            return recommendedPets.filter(pet => !pet.viewed);
+          })
       : Promise.resolve([]),
-    [firstSelectedPet]
-  );
+    [firstSelectedPet, isChangedLDB]
+);
+
+  
 
   useEffect(() => {
     const fetchRcm = async () => {
@@ -61,18 +67,35 @@ const PetCard: React.FC = () => {
     if (rcms && rcms.length > 0) {
       setPets(rcms);
     }
+    console.log('called')
   }, [rcms]);
 
   const handleNextPet = () => {
-    setCurrentIndex((prevIndex) => (prevIndex === pets.length - 1 ? 0 : prevIndex + 1));
+    if (currentIndex === pets.length - 1) {
+      setIsNoRcms(true);
+    } else {
+      setCurrentIndex((prevIndex) => prevIndex + 1);
+    }
   };
+  
 
   const handleLike = async () => {
     const currentPet = pets[currentIndex];
 
     try {
       // await axios.post('/api/pet/like', { pet_id: currentPet.pet_id });
-      handleNextPet(); // Chuyển sang pet tiếp theo
+      if(firstSelectedPet){
+        const existingRecord = await dbPet.rcm.where('pet_id').equals(firstSelectedPet.pet_id).first();
+        if (existingRecord) {
+          const updatedRecommendedPets = existingRecord.recommended_pets.map(pet => 
+            pet.pet_id === currentPet.pet_id ? { ...pet, viewed: true } : pet
+          );
+          await dbPet.rcm.update(existingRecord.pet_id, { recommended_pets: updatedRecommendedPets });
+          setIsChangedLDB(prev => !prev);
+          handleNextPet(); // Chuyển sang pet tiếp theo
+        }
+      }
+
     } catch (error) {
       console.error('Error liking pet:', error);
     }
@@ -82,7 +105,16 @@ const PetCard: React.FC = () => {
     const currentPet = pets[currentIndex];
     try {
       // await axios.post('/api/pet/dislike', { pet_id: currentPet.pet_id });
-      handleNextPet(); // Chuyển sang pet tiếp theo
+      if(firstSelectedPet){
+        const existingRecord = await dbPet.rcm.where('pet_id').equals(firstSelectedPet.pet_id).first();
+        if (existingRecord) {
+          const updatedRecommendedPets = existingRecord.recommended_pets.map(pet => 
+            pet.pet_id === currentPet.pet_id ? { ...pet, viewed: true } : pet
+          );
+          await dbPet.rcm.update(existingRecord.pet_id, { recommended_pets: updatedRecommendedPets });
+        }
+      }
+      handleNextPet();
     } catch (error) {
       console.error('Error disliking pet:', error);
     }

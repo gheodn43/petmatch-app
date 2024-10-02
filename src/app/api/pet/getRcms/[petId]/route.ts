@@ -26,7 +26,7 @@ export async function GET(req: NextRequest, { params }: { params: { petId: strin
             return NextResponse.json({ message: 'Pet not found' }, { status: 404 });
         }
 
-        const likedPets = petData.pet_liked?.SS || [];  // Assuming `pet_liked` is a list of strings (pet IDs)
+        const likedPets = petData.pet_liked?.SS || []; 
         const unlikedPets = petData.pet_unliked?.SS || [];
         const petType = petData.pet_type.S;
         const petGender = petData.pet_gender.S;
@@ -37,23 +37,21 @@ export async function GET(req: NextRequest, { params }: { params: { petId: strin
         const partnerGender = petGender === 'Male' ? 'Female' : 'Male';
         const getRecommendedParams = {
             TableName: 'petmatch-pets',
-            IndexName: 'pet_type-gender-index', // GSI cho pet_type và pet_gender
+            IndexName: 'pet_type-gender-index',
             KeyConditionExpression: 'pet_type = :petType and pet_gender = :petGender',
             ExpressionAttributeValues: {
                 ':petType': { S: petType },
                 ':petGender': { S: partnerGender },
             },
-            Limit: 20,
+            Limit: 10,
         };
 
         const recommendedPetsResponse = await dynamoDB.send(new QueryCommand(getRecommendedParams));
         const recommendedPets = recommendedPetsResponse.Items || [];
-
-        // Filter out liked and unliked pets manually
         const filteredPets = recommendedPets.filter((pet: any) => {
             const petId = pet.pet_id.S;
             return !likedPets.includes(petId) && !unlikedPets.includes(petId);
-        }).slice(0, 5);  // Limit to 5 results
+        });
 
         const pets = filteredPets.map((item) => {
             const petImages = item.pet_images?.L?.map(image => image.S ?? '') || [];
@@ -72,7 +70,7 @@ export async function GET(req: NextRequest, { params }: { params: { petId: strin
                         comment: review.M.comment?.S ?? ''
                     };
                 }
-                return null; // Trả về null nếu review.M không tồn tại
+                return null;
             })
             .filter((review): review is Reviewing => review !== null) || [];
 
@@ -89,11 +87,9 @@ export async function GET(req: NextRequest, { params }: { params: { petId: strin
                 pet_images: petImages,
                 pet_certificates: petCertificates,
                 pet_status: item.pet_status.S ?? '',
-                pet_liked: petLiked,
-                pet_unliked: petUnliked,
-                pet_matched: petMatched,
                 pet_star: item.pet_star?.N ? Number(item.pet_star.N) : 0,
-                pet_review: petReview  // Cập nhật đúng cấu trúc Reviewing
+                pet_review: petReview,
+                viewed: false
             });
         });
         return NextResponse.json({ rcmPets: pets }, { status: 200 });
