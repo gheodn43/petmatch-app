@@ -3,11 +3,32 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faComment, faShield, faUser, faHeartCircleCheck } from '@fortawesome/free-solid-svg-icons';
 import { useRouter, usePathname } from "next/navigation"; // Import usePathname
 import { useHomeContext } from '@/providers/HomeContext';
+import { useEffect, useState } from 'react';
+import { dbPet } from '@/localDB/pet.db';
 
 export default function Nav() {
     const router = useRouter();
     const { homeActiveView, setHomeActiveView } = useHomeContext();
     const pathname = usePathname(); // Lấy đường dẫn hiện tại
+
+    const [petTypes, setPetTypes] = useState<string[]>([]);
+
+  useEffect(() => {
+    // Gọi hàm để lấy giá trị pet_type khi component được mount
+    const fetchPetTypes = async () => {
+      try {
+        const types = await dbPet.pet.toArray();
+        const distinctPetTypes = Array.from(new Set(types.map(pet => pet.pet_type)));
+        setPetTypes(distinctPetTypes);
+      } catch (error) {
+        console.error('Failed to retrieve pet types:', error);
+      }
+    };
+
+    fetchPetTypes();
+  }, []);
+
+  
 
     // Hàm xử lý click cho các nút
     const handleNavigation = (view: string) => {
@@ -15,8 +36,8 @@ export default function Nav() {
             case 'petcare':
                 router.push('/petcare');
                 break;
-            case 'forum':
-                router.push('/forum');
+            case 'blog':
+                router.push(`/blog/${petTypes}`);
                 break;
             case 'recs':
                 router.push('/home');
@@ -46,8 +67,8 @@ export default function Nav() {
                 <FontAwesomeIcon icon={faShield} className="p-2 rounded-full text-xl" />
             </button>
             <button
-                className={`flex-1 text-center py-2 ${isActive('/forum') ? 'text-secondary' : 'text-primary'}`}
-                onClick={() => handleNavigation('forum')}
+                className={`flex-1 text-center py-2 ${isActive('/blog') ? 'text-secondary' : 'text-primary'}`}
+                onClick={() => handleNavigation('blog')}
             >
                 <FontAwesomeIcon icon={faComment} className="p-2 rounded-full text-xl" />
             </button>
