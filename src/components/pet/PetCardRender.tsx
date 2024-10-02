@@ -69,7 +69,7 @@ const PetCardRender: React.FC<PetCardRenderProps> = ({ currentPet, onLike, onDis
             <img
               src={currentPet.pet_images[currentImageIndex] || 'default-image-url'}
               alt={currentPet.pet_name || 'No Name'}
-              className="w-full lg:w-[350px] h-[600px] object-cover"
+              className="w-full lg:w-[350px] h-full md:h-[600px] object-cover"
             />
           ) : (
             <p>No pet information available.</p>

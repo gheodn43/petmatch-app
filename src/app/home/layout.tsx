@@ -1,9 +1,10 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { UserProvider } from '@/providers/UserContext';
 import TabPets from '@/components/pet/tabpets';
 import { PetOverviewDto } from '../model/pet';
 import { dbPet } from '@/localDB/pet.db';
+import { useLiveQuery } from 'dexie-react-hooks';
 
 export default function MainPageLayout({
     children, side, main
@@ -13,39 +14,38 @@ export default function MainPageLayout({
     main: React.ReactNode
 }) {
     const [activeView, setActiveView] = useState<string>('main');
-    const [pets, setPets] = useState<PetOverviewDto[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [isNotFound, setIsNotFound] = useState<boolean>(false);
-    useEffect(() => {
-        const fetchPets = async () => {
-          const localPets = await dbPet.pet.toArray();
-          if (localPets.length > 0) {
-            setPets(localPets);
-          } else {
+
+    // Sử dụng useLiveQuery để tự động cập nhật pets khi localDB thay đổi
+    const pets = useLiveQuery(async () => {
+        const localPets = await dbPet.pet.toArray();
+        if (localPets.length > 0) {
+            return localPets;
+        } else {
             const response = await fetch('/api/pet/getMyPets');
             if (response.ok) {
-              const data = await response.json();
-              setPets(data.pets);
-              await dbPet.pet.bulkAdd(data.pets);
+                const data = await response.json();
+                await dbPet.pet.bulkAdd(data.pets);
+                return data.pets;
             } else if (response.status === 401) {
-              setError('Unauthorized. Please login again.');
+                setError('Unauthorized. Please login again.');
             } else if (response.status === 404) {
-              setIsNotFound(true);
+                setIsNotFound(true);
             } else if (response.status === 500) {
-              setError('Internal server error. Please try again later.');
+                setError('Internal server error. Please try again later.');
             } else {
-              setError('An unexpected error occurred.');
+                setError('An unexpected error occurred.');
             }
-          }
-        };
-        fetchPets();
-      }, []);
+            return [];
+        }
+    }, []); // Dependencies: chỉ gọi lại khi component mount
 
     return (
         <UserProvider>
             <div className="h-screen">
                 <div className='fixed top-0 left-0 md:left-[325px] lg:left-[350px] xl:left-[400px] right-0 z-11'>
-                    <TabPets pets={pets} />
+                    <TabPets pets={pets || []} />
                 </div>
                 {children}
                 <div className="md:hidden fixed bottom-0 left-0 right-0 bg-gray-800 text-white flex justify-around h-16">
@@ -73,7 +73,6 @@ export default function MainPageLayout({
                         {main}
                     </div>
                 </div>
-
             </div>
         </UserProvider>
     );

@@ -4,11 +4,14 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import axios from 'axios';
 import { dbPet } from '@/localDB/pet.db';
 import PetCardRender from './PetCardRender';
+import PetCardSkeleton from "@/components/skeletonLoading/petcardSkeleton";
 import { RcmPetDto } from '@/app/model/pet';
 
 const PetCard: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [pets, setPets] = useState<RcmPetDto[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isNoRcms, setIsNoRcms] = useState(false);
   const selectedPets = useLiveQuery(() => dbPet.selected.toArray(), []);
   const firstSelectedPet = selectedPets?.[0];
   const rcms = useLiveQuery<RcmPetDto[]>(
@@ -20,23 +23,37 @@ const PetCard: React.FC = () => {
       : Promise.resolve([]),
     [firstSelectedPet]
   );
+
   useEffect(() => {
     const fetchRcm = async () => {
       if (firstSelectedPet) {
         const petId = firstSelectedPet.pet_id;
         const existingRecord = await dbPet.rcm.where('pet_id').equals(petId).first();
-        if (existingRecord) return;
+        if (existingRecord) {
+          setIsLoading(false); // Dữ liệu có sẵn, ngừng loading
+          return;
+        }
 
         try {
           const response = await axios.get(`/api/pet/getRcms/${petId}`);
           const rcmPets = response.data.rcmPets;
-          await dbPet.rcm.add({ pet_id: petId, recommended_pets: rcmPets });
+          if (!rcmPets || rcmPets.length === 0) {
+            setIsNoRcms(true);
+            setPets([]);
+            return;
+          } else {
+            await dbPet.rcm.add({ pet_id: petId, recommended_pets: rcmPets });
+          }
         } catch (error) {
           console.error('Error fetching recommended pets:', error);
+        } finally {
+          setIsLoading(false); // Ngừng loading sau khi dữ liệu đã tải hoặc có lỗi
         }
+      } else {
+        setIsLoading(false); // Ngừng loading nếu không có thú cưng nào được chọn
       }
     };
-
+    setPets([]);
     fetchRcm();
   }, [firstSelectedPet]);
 
@@ -52,9 +69,9 @@ const PetCard: React.FC = () => {
 
   const handleLike = async () => {
     const currentPet = pets[currentIndex];
-    // Thực hiện API để xử lý like
+
     try {
-      //await axios.post('/api/pet/like', { pet_id: currentPet.pet_id });
+      // await axios.post('/api/pet/like', { pet_id: currentPet.pet_id });
       handleNextPet(); // Chuyển sang pet tiếp theo
     } catch (error) {
       console.error('Error liking pet:', error);
@@ -63,9 +80,8 @@ const PetCard: React.FC = () => {
 
   const handleDislike = async () => {
     const currentPet = pets[currentIndex];
-    // Thực hiện API để xử lý dislike
     try {
-      //await axios.post('/api/pet/dislike', { pet_id: currentPet.pet_id });
+      // await axios.post('/api/pet/dislike', { pet_id: currentPet.pet_id });
       handleNextPet(); // Chuyển sang pet tiếp theo
     } catch (error) {
       console.error('Error disliking pet:', error);
@@ -82,11 +98,13 @@ const PetCard: React.FC = () => {
           onLike={handleLike}
           onDislike={handleDislike}
         />
+      ) : isNoRcms ? ( 
+        <img src="/images/not-found-rcms.svg" alt="Not found svg" className="h-[200px] md:h-[300px]" />
       ) : (
-        <p>No pets found.</p>
+        <PetCardSkeleton />
       )}
     </div>
-  );
+  );  
 };
 
 export default PetCard;
