@@ -34,13 +34,12 @@ const CategoryBlogsPage = () => {
   };
 
   return (
-    <div className="p-6 bg-gray-100 min-h-screen text-black">
+    <div className="p-6 min-h-screen text-black">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Blogs in Category: {category}</h1>
         {/* Nút để chuyển sang trang tạo blog */}
         <button
           onClick={() => router.push(`/blog/${category}/create`)}
-          className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          className="p-2 bg-[#FCD146] text-black rounded hover:bg-[#FFC300]"
         >
           Create New Blog
         </button>
@@ -61,10 +60,8 @@ const CategoryBlogsPage = () => {
               <h2 className="text-xl font-semibold mb-2">{blog.title}</h2>
               {/* Định dạng ngày tháng cho `createdAt` */}
               <p className="text-xs text-gray-400">Created At: {formatDate(blog.createdAt)}</p>
-              {blog.imageUrl.length > 0 && (
-                <img src={blog.imageUrl[0]} alt={blog.title} className="w-full h-40 object-cover mt-2 rounded-lg" />
-              )}
-              <p className="text-sm mt-2">{blog.content.slice(0, 100)}...</p>
+              <div className="text-sm mt-2" 
+                dangerouslySetInnerHTML={{ __html: blog.content.length > 100 ? `${blog.content.slice(0, 100)}...`: blog.content }}></div>
             </div>
           ))}
         </div>

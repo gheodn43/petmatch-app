@@ -1,11 +1,12 @@
 "use client";
 import React, { useState, useRef, useCallback } from "react";
 import ReactQuill from "react-quill";
+// import dynamic from "next/dynamic";
 import "react-quill/dist/quill.snow.css";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage"; // Import Firebase Storage SDK
 import { storage } from "@/lib/firebase";
 import axios from "axios";
-
+// const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 
 // Hàm upload ảnh lên Firebase Storage
 const uploadImage = async (file: File) => {
@@ -30,7 +31,7 @@ export default function MyComponent() {
   const handleChange = (content: string) => {
     setValue(content); // Cập nhật state value với nội dung mới
     console.log(value);
-    
+
   };
 
   // Hàm xử lý khi người dùng nhấn nút hình ảnh trên toolbar
@@ -93,12 +94,14 @@ export default function MyComponent() {
   };
 
   return (
-    <div className="text-black">
-      <h1 className="text-2xl font-bold mb-4">Create Blog</h1>
+    <div className="text-gray-900 bg-white p-6 rounded-lg shadow-lg w-full max-w-3xl mx-auto mt-10">
+      <h1 className="text-2xl font-extrabold mb-6 text-center text-gradient bg-gradient-to-r from-[#FFC629] via-[#FFD971] to-[#FFC629] h-16 flex items-center justify-center">
+        Create a New Blog
+      </h1>
 
       {/* Trường nhập tiêu đề */}
-      <div className="mb-4">
-        <label className="block text-lg font-semibold mb-2" htmlFor="title">
+      <div className="mb-6">
+        <label className="block text-lg font-medium mb-2 text-gray-700" htmlFor="title">
           Blog Title:
         </label>
         <input
@@ -107,22 +110,22 @@ export default function MyComponent() {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Enter your blog title"
-          className="w-full p-2 border border-gray-300 rounded mb-4"
+          className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#FFC629] focus:border-transparent"
         />
       </div>
 
       {/* Dropdown chọn Category */}
-      <div className="mb-4">
-        <label className="block text-lg font-semibold mb-2" htmlFor="category">
+      <div className="mb-6">
+        <label className="block text-lg font-medium mb-2 text-gray-700" htmlFor="category">
           Select Category:
         </label>
         <select
           id="category"
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          className="w-full p-2 border border-gray-300 rounded"
+          className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#FFC629] focus:border-transparent"
         >
-          <option hidden value="">Chọn Category</option>
+          <option hidden value="">Select a Category</option>
           <option value="Dog">Dog</option>
           <option value="Cat">Cat</option>
           <option value="Hamster">Hamster</option>
@@ -130,62 +133,71 @@ export default function MyComponent() {
       </div>
 
       {/* Trình soạn thảo văn bản ReactQuill */}
-      <ReactQuill
-        ref={reactQuillRef}
-        theme="snow"
-        placeholder="Start writing..."
-        modules={{
-          toolbar: {
-            container: [
-              [{ header: "1" }, { header: "2" }, { font: [] }],
-              [{ size: [] }],
-              ["bold", "italic", "underline", "strike", "blockquote"],
-              [
-                { list: "ordered" },
-                { list: "bullet" },
-                { indent: "-1" },
-                { indent: "+1" },
+      <div className="mb-6">
+        <label className="block text-lg font-medium mb-2 text-gray-700">
+          Blog Content:
+        </label>
+        <ReactQuill
+          ref={reactQuillRef}
+          theme="snow"
+          placeholder="Start writing..."
+          modules={{
+            toolbar: {
+              container: [
+                [{ header: "1" }, { header: "2" }, { font: [] }],
+                [{ size: [] }],
+                ["bold", "italic", "underline", "strike", "blockquote"],
+                [
+                  { list: "ordered" },
+                  { list: "bullet" },
+                  { indent: "-1" },
+                  { indent: "+1" },
+                ],
+                ["link", "image", "video"],
+                ["code-block"],
+                ["clean"],
               ],
-              ["link", "image", "video"],
-              ["code-block"],
-              ["clean"],
-            ],
-            handlers: {
-              image: imageHandler, // Thêm imageHandler để xử lý việc chèn ảnh
+              handlers: {
+                image: imageHandler,
+              },
             },
-          },
-          clipboard: {
-            matchVisual: false,
-          },
-        }}
-        formats={[
-          "header",
-          "font",
-          "size",
-          "bold",
-          "italic",
-          "underline",
-          "strike",
-          "blockquote",
-          "list",
-          "bullet",
-          "indent",
-          "link",
-          "image",
-          "video",
-          "code-block",
-        ]}
-        value={value}
-        onChange={handleChange} // Gọi hàm handleChange khi nội dung thay đổi
-      />
+            clipboard: {
+              matchVisual: false,
+            },
+          }}
+          formats={[
+            "header",
+            "font",
+            "size",
+            "bold",
+            "italic",
+            "underline",
+            "strike",
+            "blockquote",
+            "list",
+            "bullet",
+            "indent",
+            "link",
+            "image",
+            "video",
+            "code-block",
+          ]}
+          value={value}
+          onChange={handleChange} // Gọi hàm handleChange khi nội dung thay đổi
+          className="border border-gray-300 rounded-lg shadow-sm"
+        />
+      </div>
 
       {/* Nút Submit để gửi dữ liệu */}
-      <button
-        onClick={handleSubmit}
-        className="mt-4 bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
-      >
-        Submit Blog
-      </button>
+      <div className="flex justify-center">
+        <button
+          onClick={handleSubmit}
+          className="px-6 py-3 bg-gradient-to-r from-[#FFC629] via-[#FFD971] to-[#FFC629] text-black font-bold rounded-lg shadow-lg transform hover:scale-105 transition duration-200 hover:bg-[#FFD971]"
+        >
+          Submit Blog
+        </button>
+      </div>
     </div>
+
   );
 }

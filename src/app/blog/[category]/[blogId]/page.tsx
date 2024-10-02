@@ -75,54 +75,66 @@ const BlogDetailPage = () => {
     return <p>Blog not found</p>;
   }
   console.log(comments);
-  
+
 
   return (
-    <div className="p-6 bg-gray-100 min-h-screen text-black">
+    <div className="p-6 min-h-screen text-black">
       {/* Khu vực hiển thị chi tiết blog */}
       <div className="bg-white p-6 rounded-lg shadow-lg">
         <h1 className="text-3xl font-bold mb-4">{blog.title}</h1>
         <div className="text-xs text-gray-400 mb-4">Created At: {new Date(blog.createdAt).toLocaleString()}</div>
-        {blog.imageUrl.length > 0 && (
-          <img src={blog.imageUrl[0]} alt={blog.title} className="w-full h-80 object-cover mb-4 rounded-lg" />
-        )}
         <div dangerouslySetInnerHTML={{ __html: blog.content }} className="text-base leading-6" />
       </div>
 
       {/* Khu vực hiển thị các comment hiện có */}
       <div className="bg-white mt-6 p-4 rounded-lg shadow-lg" ref={commentSectionRef}>
-  <h3 className="text-lg font-bold mb-4">Comments</h3>
-  {comments.length === 0 ? (
-    <p>No comments yet. Be the first to comment!</p>
-  ) : (
-    <div className="space-y-4">
-      {comments.map((comment) => (
-        <div key={comment.commentId} className="border-b border-gray-300 pb-2">
-          <p className="text-sm">
-            <strong>{comment.authorName}</strong>: {comment.content}
-          </p>
-          <p className="text-xs text-gray-400">{new Date(comment.createdAt).toLocaleString()}</p>
-        </div>
-      ))}
-    </div>
-  )}
-</div>
+        <h3 className="text-lg font-bold mb-4">Comments</h3>
+        {comments.length === 0 ? (
+          <p>No comments yet. Be the first to comment!</p>
+        ) : (
+          <div className="space-y-4">
+            {comments.map((comment) => (
+              <div key={comment.commentId} className="border-b border-gray-300 pb-2">
+                <p className="text-sm">
+                  <strong>{comment.authorName}</strong>: {comment.content}
+                </p>
+                <p className="text-xs text-gray-400">{new Date(comment.createdAt).toLocaleString()}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Khu vực nhập comment */}
       <div className="bg-white mt-6 p-4 rounded-lg shadow-lg">
         <h3 className="text-lg font-bold mb-4">Add a Comment</h3>
-        <textarea
-          value={comment}
-          onChange={(e) => setComment(e.target.value)}
-          placeholder="Write your comment here..."
-          className="w-full h-24 p-2 border border-gray-300 rounded mb-4"
-        />
-        <button
-          onClick={handleCommentSubmit}
-          className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          Submit Comment
-        </button>
+        {/* Container cho textarea và button */}
+        <div className="flex items-start space-x-4">
+          <textarea
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            onInput={(e) => {
+              const target = e.target as HTMLTextAreaElement;
+              target.style.height = 'auto';
+              target.style.height = `${target.scrollHeight}px`;
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault(); // Ngăn chặn hành vi mặc định (tạo dòng mới)
+                handleCommentSubmit(); // Gọi hàm submit khi nhấn Enter
+              }
+            }}
+            placeholder="Write your comment here..."
+            className="w-full h-10 p-2 border border-gray-300 rounded resize-none"
+            style={{ overflow: 'hidden' }} // Ẩn thanh cuộn
+          />
+          <button
+            onClick={handleCommentSubmit}
+            className="h-10 p-2 bg-[#FCD146] text-black rounded hover:bg-[#FFC300] flex-shrink-0"
+          >
+            Send
+          </button>
+        </div>
       </div>
     </div>
   );
