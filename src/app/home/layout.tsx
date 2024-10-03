@@ -16,8 +16,6 @@ export default function MainPageLayout({
     const { homeActiveView } = useHomeContext();
     const [error, setError] = useState<string | null>(null);
     const [isNotFound, setIsNotFound] = useState<boolean>(false);
-
-    // Sử dụng useLiveQuery để tự động cập nhật pets khi localDB thay đổi
     const pets = useLiveQuery(async () => {
         const localPets = await dbPet.pet.toArray();
         if (localPets.length > 0) {
@@ -31,7 +29,8 @@ export default function MainPageLayout({
             } else if (response.status === 401) {
                 setError('Unauthorized. Please login again.');
             } else if (response.status === 404) {
-                setIsNotFound(true);
+                setIsNotFound(true); 
+                return []
             } else if (response.status === 500) {
                 setError('Internal server error. Please try again later.');
             } else {
@@ -39,7 +38,7 @@ export default function MainPageLayout({
             }
             return [];
         }
-    }, []); // Dependencies: chỉ gọi lại khi component mount
+    }, []);
 
     return (
         <UserProvider>
@@ -49,12 +48,9 @@ export default function MainPageLayout({
                 </div>
                 {children}
                 <div className="h-full w-full flex">
-                    {/* Side view */}
                     <div className={`bg-primary overflow-y-auto h-full ${homeActiveView === 'side' ? 'flex-1' : 'hidden'} md:flex-none md:block md:w-[325px] lg:w-[350px] xl:w-[400px]`}>
                         {side}
                     </div>
-
-                    {/* Main view */}
                     <div className={`bg-white overflow-y-auto h-full py-16 ${homeActiveView === 'main' ? 'flex-1' : 'hidden'} md:block md:flex-1`}>
                         {main}
                     </div>

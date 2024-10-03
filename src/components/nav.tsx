@@ -57,6 +57,9 @@ export default function Nav() {
 
     // Hàm kiểm tra xem button có được chọn không dựa trên đường dẫn
     const isActive = (path: string): boolean => pathname.includes(path);
+    if(isActive('/signin')){
+        return (<></>)
+    }
 
     return (
         <div className="md:hidden fixed bottom-0 left-0 right-0 bg-gray-800 text-white flex justify-around h-16">

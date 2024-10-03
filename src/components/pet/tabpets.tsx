@@ -26,7 +26,6 @@ const TabPets: React.FC<TabPetsProps> = ({ pets }) => {
         await handleSelectPet(pets[0]);
       }
     };
-
     fetchSelectedPets();
   }, [pets]);
 
@@ -36,22 +35,15 @@ const TabPets: React.FC<TabPetsProps> = ({ pets }) => {
   };
 
   const handleSelectPet = async (pet: PetOverviewDto) => {
-    // Xóa pet cũ trong bảng selected
     if (selectedPets.length > 0) {
       await dbPet.selected.delete(selectedPets[0].pet_id);
     }
-
-    // Thêm pet mới vào bảng selected
     await dbPet.selected.add({ ...pet, pet_status: 'active' });
-
-    // Cập nhật lại trạng thái selected
     setSelectedPets([pet]);
   };
-
   const handleOpenMembershipPkgs = () => {
     router.push('/membership-pkgs');
   };
-
   const isFreeUserAndMaxPetReached = user_role === 'free' && pets.length >= 1;
   return (
     <div className="flex items-center space-x-2 h-16 p-4 border-b-2 border-solid border-tertiary bg-secondary md:bg-white">

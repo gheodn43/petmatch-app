@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import axios from 'axios';
-import { format } from 'date-fns'; // Import thư viện date-fns để định dạng ngày
+import { format } from 'date-fns';
 import { Blog } from '@/app/model/blog';
 
 const CategoryBlogsPage = () => {
