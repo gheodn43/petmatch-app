@@ -6,11 +6,13 @@ import { MatchedItem } from '@/app/model/petMatchedItem';
 import { pusherClient } from '@/lib/pusher';
 import { useRouter } from 'next/navigation';
 import { useLiveQuery } from 'dexie-react-hooks';
+import { useHomeContext } from '@/providers/HomeContext';
 
 const MatchingSection: React.FC = () => {
     const router = useRouter();
     const selectedPets = useLiveQuery(() => dbPet.selected.toArray(), []);
     const firstSelectedPet = selectedPets?.[0];
+    const {setHomeActiveView} = useHomeContext();
     const matched = useLiveQuery(
         () => firstSelectedPet ? dbPet.matched.where({ pet_id: firstSelectedPet.pet_id }).toArray() : [],
         [firstSelectedPet]
@@ -34,7 +36,7 @@ const MatchingSection: React.FC = () => {
                 const petId = firstSelectedPet.pet_id;
                 const existingRecord = await dbPet.matched.where('pet_id').equals(petId).first();
                 if (existingRecord) {
-                    return; // Nếu đã có, bỏ qua phần còn lại của useEffect
+                    return; 
                 }
                 try {
                     const response = await axios.get(`/api/pet/getMyMatched/${petId}`);
@@ -73,15 +75,9 @@ const MatchingSection: React.FC = () => {
         }
     };
 
-    const handleChatClick = (roomId: string) => {
-        const screenWidth = window.innerWidth;
-        const mdBreakpoint = 768; // Kích thước màn hình "md"
-        if (screenWidth < mdBreakpoint) {
-            location.assign(`/chat/${roomId}`);
-        } else {
-            router.push(`/chat/${roomId}`);
-            console.log(`Chat with room: ${roomId}`);
-        }
+    const handleChatClick = async (roomId: string) => {
+        await router.push(`/chat/${roomId}`); 
+        setHomeActiveView('main'); 
     };
     return (
         <div className="p-4 mt-16 md:mt-0">
@@ -96,10 +92,13 @@ const MatchingSection: React.FC = () => {
                             <img
                                 src={match.partner_avatar}
                                 alt={match.partner_name}
-                                className="w-full h-32 md:h-44 xl:h-36 object-cover rounded-lg"
+                                className="w-full h-32 md:h-4 xl:h-36 object-cover rounded-lg"
                             />
                             <div className="absolute bottom-2 left-2">
                                 <h3 className="text-white text-sm font-bold">{match.partner_name}</h3>
+                            </div>
+                            <div className="absolute top-1 left-2">
+                                <h5 className="text-white text-sm">{getRelativeTime(match.created_at)}</h5>
                             </div>
                         </div>
                     ))}

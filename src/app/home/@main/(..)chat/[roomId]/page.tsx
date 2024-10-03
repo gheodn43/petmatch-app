@@ -3,20 +3,25 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import axios from 'axios';
 import { pusherClient } from '@/lib/pusher';
+import { useChatStore } from '@/zustand/store/chatStore';
 import { Message } from '@/app/model/message';
 import { dbPet } from '@/localDB/pet.db';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
+import { useHomeContext } from '@/providers/HomeContext';
 
 const ChatPage: React.FC = () => {
     const { roomId } = useParams();
-    const [messages, setMessages] = useState<Message[]>([]);
+    const roomIdStr = Array.isArray(roomId) ? roomId[0] : roomId;
+    const { chatrooms, addMessagesToRoom, updateMessagesForRoom } = useChatStore(); // Lấy dữ liệu từ Zustand
     const [newMessage, setNewMessage] = useState<string>('');
     const [petInfo, setPetInfo] = useState({ pet_id: '', pet_name: '' });
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const [isSending, setIsSending] = useState(false);
-    const [loadingMessages, setLoadingMessages] = useState(true);
     const router = useRouter();
+    const { setHomeActiveView } = useHomeContext();
+    const messages = chatrooms[roomIdStr] || []; // Lấy tin nhắn từ store Zustand
+    const [loadingMessages, setLoadingMessages] = useState(!messages.length); // Chỉ load nếu chưa có tin nhắn
 
     // Cuộn xuống khi có tin nhắn mới
     const scrollToBottom = () => {
@@ -33,10 +38,12 @@ const ChatPage: React.FC = () => {
         };
 
         const fetchMessages = async () => {
+            if (!loadingMessages) return; // Nếu đã có tin nhắn thì không fetch nữa
+
             try {
                 setLoadingMessages(true); // Đặt trạng thái đang tải tin nhắn
                 const response = await axios.get(`/api/chat/${roomId}/messages`);
-                setMessages(response.data);
+                updateMessagesForRoom(roomIdStr, response.data); // Lưu tin nhắn vào Zustand
                 scrollToBottom(); // Cuộn xuống khi fetch xong tin nhắn
             } catch (error) {
                 console.error('Error fetching messages:', error);
@@ -52,14 +59,7 @@ const ChatPage: React.FC = () => {
 
         // Lắng nghe sự kiện new-message
         channel.bind('new-message', (message: Message) => {
-            // Kiểm tra nếu tin nhắn đã tồn tại, tránh việc thêm trùng lặp
-            setMessages((prevMessages) => {
-                const exists = prevMessages.some((msg) => msg.id === message.id);
-                if (!exists) {
-                    return [...prevMessages, message];
-                }
-                return prevMessages;
-            });
+            addMessagesToRoom(roomIdStr, [message]); // Thêm tin nhắn mới vào Zustand
             scrollToBottom(); // Cuộn xuống khi nhận tin nhắn mới
         });
 
@@ -87,15 +87,17 @@ const ChatPage: React.FC = () => {
         }
     };
 
-    // Hàm xử lý khi nhấn phím Enter
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
             sendMessage();
         }
     };
+
     const handleBack = () => {
-        router.back(); // Quay lại trang trước đó
-      }
+        router.back();
+        setHomeActiveView('side');
+    };
+
     return (
         <div className="flex flex-col py-16">
             <div className='flex space-x-4 bg-white py-3 px-6 fixed top-16 left-0 md:left-[325px] lg:left-[350px] xl:left-[400px] right-0'>
@@ -112,15 +114,23 @@ const ChatPage: React.FC = () => {
                     </div>
                 ) : (
                     <div className="flex-grow overflow-y-auto p-4 bg-white">
-                        {messages.map((msg) => (
-                            <div key={msg.id} className={`mb-2 flex ${msg.senderId === petInfo.pet_id ? 'justify-end' : 'justify-start'}`}>
+                    {Array.from(new Set(messages.map(msg => msg.id))).map((id) => {
+                        const msg = messages.find(m => m.id === id); // Lấy tin nhắn đầu tiên với id đó
+                
+                        // Kiểm tra xem msg có tồn tại không
+                        if (!msg) return null; // Nếu không có, không hiển thị gì
+                
+                        return (
+                            <div key={id} className={`mb-2 flex ${msg.senderId === petInfo.pet_id ? 'justify-end' : 'justify-start'}`}>
                                 <div className={`p-2 rounded-lg shadow ${msg.senderId === petInfo.pet_id ? ' bg-[#FFD971] text-gray-900' : 'bg-[#FFF9E4] text-gray-900'}`}>
                                     <div className="text-sm">{msg.content}</div>
                                 </div>
                             </div>
-                        ))}
-                        <div ref={messagesEndRef} />
-                    </div>
+                        );
+                    })}
+                    <div ref={messagesEndRef} />
+                </div>
+                
                 )}
             </div>
             <div className="fixed bottom-0 left-0 md:left-[325px] lg:left-[350px] xl:left-[400px] right-0 z-10 p-4 bg-gray-50 flex">
@@ -143,7 +153,6 @@ const ChatPage: React.FC = () => {
             </div>
         </div>
     );
-
 };
 
 export default ChatPage;

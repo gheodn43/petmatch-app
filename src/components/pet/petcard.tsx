@@ -1,5 +1,5 @@
 'use client'
-import React, { useState, useEffect } from 'react';
+import React, { useReducer, useEffect } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import axios from 'axios';
 import { dbPet } from '@/localDB/pet.db';
@@ -7,39 +7,71 @@ import PetCardRender from './PetCardRender';
 import PetCardSkeleton from "@/components/skeletonLoading/petcardSkeleton";
 import { RcmPetDto } from '@/app/model/pet';
 import CTACreatePet from '../CTACreaatePet';
+import { usePetsContext } from '@/providers/PetsContext';
+
+const initialState = {
+  currentIndex: 0,
+  isChangedLDB: false,
+  isLoading: true,
+  isNoRcms: false
+};
+
+type State = typeof initialState;
+
+type Action =
+  | { type: 'SET_LOADING'; payload: boolean }
+  | { type: 'SET_NO_RCMS'; payload: boolean }
+  | { type: 'SET_CHANGED_LDB'; payload: boolean }
+  | { type: 'NEXT_PET' };
+
+function reducer(state: State, action: Action): State {
+  switch (action.type) {
+    case 'SET_LOADING':
+      return { ...state, isLoading: action.payload };
+    case 'SET_NO_RCMS':
+      return { ...state, isNoRcms: action.payload };
+    case 'SET_CHANGED_LDB':
+      return { ...state, isChangedLDB: action.payload };
+    case 'NEXT_PET':
+      const nextIndex = state.currentIndex + 1;
+      return { ...state, currentIndex: nextIndex };
+    default:
+      return state;
+  }
+}
 
 const PetCard: React.FC = () => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [pets, setPets] = useState<RcmPetDto[]>([]);
-  const [isChangedLDB, setIsChangedLDB] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isNoRcms, setIsNoRcms] = useState(false);
+  const [state, dispatch] = useReducer(reducer, initialState);
+  const { currentIndex, isLoading, isNoRcms } = state;
+
   const selectedPets = useLiveQuery(() => dbPet.selected.toArray(), []);
   const firstSelectedPet = selectedPets?.[0];
-  const rcms = useLiveQuery<RcmPetDto[]>(() => 
+
+  const { hasPets } = usePetsContext();
+  const rcms = useLiveQuery<RcmPetDto[]>(() =>
     firstSelectedPet
       ? dbPet.rcm
-          .where({ pet_id: firstSelectedPet.pet_id })
-          .first()
-          .then(record => {
-            const recommendedPets = record?.recommended_pets ?? [];
-            return recommendedPets.filter(pet => !pet.viewed);
-          })
+        .where({ pet_id: firstSelectedPet.pet_id })
+        .first()
+        .then(record => {
+          const recommendedPets = record?.recommended_pets ?? [];
+          return recommendedPets.filter(pet => !pet.viewed);
+        })
       : Promise.resolve([]),
-    [firstSelectedPet, isChangedLDB]
-);
+    [firstSelectedPet, state.isChangedLDB]
+  );
 
   useEffect(() => {
     const fetchRcm = async () => {
       if (!firstSelectedPet) {
-        setIsLoading(false); // Ngừng loading nếu không có thú cưng nào được chọn
+        dispatch({ type: 'SET_LOADING', payload: false });
         return;
       }
-      
+
       const petId = firstSelectedPet.pet_id;
       const existingRecord = await dbPet.rcm.where('pet_id').equals(petId).first();
       if (existingRecord) {
-        setIsLoading(false); // Dữ liệu có sẵn, ngừng loading
+        dispatch({ type: 'SET_LOADING', payload: false });
         return;
       }
 
@@ -47,8 +79,7 @@ const PetCard: React.FC = () => {
         const response = await axios.get(`/api/pet/getRcms/${petId}`);
         const rcmPets = response.data.rcmPets;
         if (!rcmPets || rcmPets.length === 0) {
-          setIsNoRcms(true);
-          setPets([]);
+          dispatch({ type: 'SET_NO_RCMS', payload: true });
           return;
         } else {
           await dbPet.rcm.add({ pet_id: petId, recommended_pets: rcmPets });
@@ -56,86 +87,86 @@ const PetCard: React.FC = () => {
       } catch (error) {
         console.error('Error fetching recommended pets:', error);
       } finally {
-        setIsLoading(false); // Ngừng loading sau khi dữ liệu đã tải hoặc có lỗi
+        dispatch({ type: 'SET_LOADING', payload: false });
       }
     };
-    setPets([]);
     fetchRcm();
   }, [firstSelectedPet]);
 
-  useEffect(() => {
-    if (rcms && rcms.length > 0) {
-      setPets(rcms);
-    }
-  }, [rcms]);
-
   const handleNextPet = () => {
-    if (currentIndex === pets.length - 1) {
-      setIsNoRcms(true);
+    if (currentIndex === (rcms?.length || 0) - 1) {
+      dispatch({ type: 'SET_NO_RCMS', payload: true });
     } else {
-      setCurrentIndex((prevIndex) => prevIndex + 1);
+      dispatch({ type: 'NEXT_PET' });
     }
   };
-  
 
   const handleLike = async () => {
-    const currentPet = pets[currentIndex];
+    const currentPet = rcms?.[currentIndex];
 
     try {
-      if(firstSelectedPet){
+      if (firstSelectedPet && currentPet) {
         const existingRecord = await dbPet.rcm.where('pet_id').equals(firstSelectedPet.pet_id).first();
         if (existingRecord) {
-          const updatedRecommendedPets = existingRecord.recommended_pets.map(pet => 
+          const updatedRecommendedPets = existingRecord.recommended_pets.map(pet =>
             pet.pet_id === currentPet.pet_id ? { ...pet, viewed: true } : pet
           );
           await dbPet.rcm.update(existingRecord.pet_id, { recommended_pets: updatedRecommendedPets });
-          setIsChangedLDB(prev => !prev);
-          handleNextPet(); // Chuyển sang pet tiếp theo
+          dispatch({ type: 'SET_CHANGED_LDB', payload: !state.isChangedLDB });
+          handleNextPet();
         }
       }
-
     } catch (error) {
       console.error('Error liking pet:', error);
     }
   };
 
   const handleDislike = async () => {
-    const currentPet = pets[currentIndex];
+    const currentPet = rcms?.[currentIndex];
+
     try {
-      if(firstSelectedPet){
+      if (firstSelectedPet && currentPet) {
         const existingRecord = await dbPet.rcm.where('pet_id').equals(firstSelectedPet.pet_id).first();
         if (existingRecord) {
-          const updatedRecommendedPets = existingRecord.recommended_pets.map(pet => 
+          const updatedRecommendedPets = existingRecord.recommended_pets.map(pet =>
             pet.pet_id === currentPet.pet_id ? { ...pet, viewed: true } : pet
           );
           await dbPet.rcm.update(existingRecord.pet_id, { recommended_pets: updatedRecommendedPets });
+          handleNextPet();
         }
       }
-      handleNextPet();
     } catch (error) {
       console.error('Error disliking pet:', error);
     }
   };
 
-  const currentPet = pets[currentIndex];
+  const currentPet = rcms?.[currentIndex];
 
+  if (!hasPets) {
+    return (
+      <div className="flex flex-col items-center justify-center text-black h-full md:py-16">
+        <CTACreatePet />
+      </div>
+    )
+  }
   return (
     <div className="flex flex-col items-center justify-center text-black h-full md:py-16">
       {!firstSelectedPet ? (
-        <CTACreatePet/>
-      ) : pets.length > 0 ? (
-        <PetCardRender
-          currentPet={currentPet}
-          onLike={handleLike}
-          onDislike={handleDislike}
-        />
-      ) : isNoRcms ? ( 
+        <PetCardSkeleton />
+      ) : rcms?.length ? (
+        currentPet ? (
+          <PetCardRender currentPet={currentPet} onLike={handleLike} onDislike={handleDislike} />
+        ) : (
+          <PetCardSkeleton />
+        )
+      ) : isNoRcms ? (
         <img src="/images/not-found-rcms.svg" alt="Not found svg" className="h-[200px] md:h-[300px]" />
       ) : (
         <PetCardSkeleton />
       )}
     </div>
-  );  
+  );
 };
 
 export default PetCard;
+

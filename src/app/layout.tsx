@@ -5,6 +5,7 @@ import '@fortawesome/fontawesome-svg-core/styles.css';
 import "./globals.css";
 import Nav from "@/components/nav";
 import { HomeProvider } from "@/providers/HomeContext";
+import { PetsProvider } from "@/providers/PetsContext";
 config.autoAddCss = false;
 
 export const metadata: Metadata = {
@@ -23,8 +24,10 @@ export default function RootLayout({
       >
         <GoogleOAuthProvider clientId="717208055945-s60n7eev35fbuvpma1cdpvru5j83fose.apps.googleusercontent.com">
           <HomeProvider>
-            {children}
-            <Nav />
+            <PetsProvider>
+              {children}
+              <Nav />
+            </PetsProvider>
           </HomeProvider>
         </GoogleOAuthProvider>
       </body>
