@@ -16,6 +16,7 @@ const ChatPage: React.FC = () => {
     const { chatrooms, addMessagesToRoom, updateMessagesForRoom } = useChatStore(); // Lấy dữ liệu từ Zustand
     const [newMessage, setNewMessage] = useState<string>('');
     const [petInfo, setPetInfo] = useState({ pet_id: '', pet_name: '' });
+    const [partnerInfo, setPartnerInfo] = useState({ pet_id: '', pet_name: '', pet_image: '', created_at: '' });
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const [isSending, setIsSending] = useState(false);
     const router = useRouter();
@@ -33,9 +34,30 @@ const ChatPage: React.FC = () => {
             const selectedPets = await dbPet.selected.toArray();
             if (selectedPets.length > 0) {
                 const firstSelectedPet = selectedPets[0];
-                setPetInfo({ pet_id: firstSelectedPet.pet_id, pet_name: firstSelectedPet.pet_name });
+
+                // Set pet info from selected pet
+                setPetInfo({
+                    pet_id: firstSelectedPet.pet_id,
+                    pet_name: firstSelectedPet.pet_name
+                });
+
+                // Fetch partner info from the matched table
+                const matchedPets = await dbPet.matched.where('pet_id').equals(firstSelectedPet.pet_id).toArray();
+                if (matchedPets.length > 0) {
+                    const firstMatchedPet = matchedPets[0];
+                    setPartnerInfo({
+                        pet_id: firstMatchedPet.partner_id, // Assuming partner_id corresponds to pet_id in your context
+                        pet_name: firstMatchedPet.partner_name,
+                        pet_image: firstMatchedPet.partner_avatar,
+                        created_at: firstMatchedPet.created_at
+                    });
+                } else {
+                    // Handle the case where no matched pets are found
+                    setPartnerInfo({ pet_id: '', pet_name: '', pet_image: '', created_at: '' }); // Reset partner info if not found
+                }
             }
         };
+
 
         const fetchMessages = async () => {
             if (!loadingMessages) return; // Nếu đã có tin nhắn thì không fetch nữa
@@ -100,8 +122,17 @@ const ChatPage: React.FC = () => {
 
     return (
         <div className="flex flex-col py-16">
-            <div className='flex space-x-4 bg-white py-3 px-6 fixed top-16 left-0 md:left-[325px] lg:left-[350px] xl:left-[400px] right-0'>
-                <FontAwesomeIcon icon={faArrowLeft} className='text-gray-400 cursor-pointer text-lg' onClick={handleBack}/> 
+            <div className='flex flex-row justify-between items-center  space-x-4 bg-primary py-3 px-6 fixed top-0 left-0 md:left-[325px] lg:left-[350px] xl:left-[400px] right-0 h-16'>
+                <FontAwesomeIcon icon={faArrowLeft} className='text-gray-400 cursor-pointer text-lg' onClick={handleBack} />
+                <div className='flex space-x-3 items-center'>
+                    <img
+                        src={partnerInfo.pet_image}
+                        alt={partnerInfo.pet_name}
+                        className={`h-10 w-10 rounded-full object-cover`}
+                    />
+                    <p className='text-gray-400 font-sans font-black'>{partnerInfo.pet_name}</p>
+                </div>
+                <img src='/images/logo-color.png' className='h-14' />
             </div>
             <div className='overflow-hidden'>
                 {loadingMessages ? (
@@ -114,23 +145,23 @@ const ChatPage: React.FC = () => {
                     </div>
                 ) : (
                     <div className="flex-grow overflow-y-auto p-4 bg-white">
-                    {Array.from(new Set(messages.map(msg => msg.id))).map((id) => {
-                        const msg = messages.find(m => m.id === id); // Lấy tin nhắn đầu tiên với id đó
-                
-                        // Kiểm tra xem msg có tồn tại không
-                        if (!msg) return null; // Nếu không có, không hiển thị gì
-                
-                        return (
-                            <div key={id} className={`mb-2 flex ${msg.senderId === petInfo.pet_id ? 'justify-end' : 'justify-start'}`}>
-                                <div className={`p-2 rounded-lg shadow ${msg.senderId === petInfo.pet_id ? ' bg-[#FFD971] text-gray-900' : 'bg-[#FFF9E4] text-gray-900'}`}>
-                                    <div className="text-sm">{msg.content}</div>
+                        {Array.from(new Set(messages.map(msg => msg.id))).map((id) => {
+                            const msg = messages.find(m => m.id === id); // Lấy tin nhắn đầu tiên với id đó
+
+                            // Kiểm tra xem msg có tồn tại không
+                            if (!msg) return null; // Nếu không có, không hiển thị gì
+
+                            return (
+                                <div key={id} className={`mb-2 flex ${msg.senderId === petInfo.pet_id ? 'justify-end' : 'justify-start'}`}>
+                                    <div className={`p-2 rounded-lg shadow ${msg.senderId === petInfo.pet_id ? ' bg-[#FFD971] text-gray-900' : 'bg-[#FFF9E4] text-gray-900'}`}>
+                                        <div className="text-sm">{msg.content}</div>
+                                    </div>
                                 </div>
-                            </div>
-                        );
-                    })}
-                    <div ref={messagesEndRef} />
-                </div>
-                
+                            );
+                        })}
+                        <div ref={messagesEndRef} />
+                    </div>
+
                 )}
             </div>
             <div className="fixed bottom-0 left-0 md:left-[325px] lg:left-[350px] xl:left-[400px] right-0 z-10 p-4 bg-gray-50 flex">

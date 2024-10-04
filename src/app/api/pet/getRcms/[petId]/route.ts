@@ -26,8 +26,9 @@ export async function GET(req: NextRequest, { params }: { params: { petId: strin
             return NextResponse.json({ message: 'Pet not found' }, { status: 404 });
         }
 
-        const likedPets = petData.pet_liked?.SS || []; 
-        const unlikedPets = petData.pet_unliked?.SS || [];
+        const likedPets = petData.pet_liked?.L ? petData.pet_liked.L.map(item => item.S) : [];
+        const unlikedPets = petData.pet_unliked?.L ? petData.pet_unliked.L.map(item => item.S) : [];
+
         const petType = petData.pet_type.S;
         const petGender = petData.pet_gender.S;
 
@@ -56,10 +57,6 @@ export async function GET(req: NextRequest, { params }: { params: { petId: strin
         const pets = filteredPets.map((item) => {
             const petImages = item.pet_images?.L?.map(image => image.S ?? '') || [];
             const petCertificates = item.pet_certificates?.L?.map(cert => cert.S ?? '') || [];
-            const petLiked = item.pet_liked?.SS || [];
-            const petUnliked = item.pet_unliked?.SS || [];
-            const petMatched = item.pet_matched?.SS || [];
-
             const petReview = item.pet_review?.L?.map(review => {
                 if (review.M) {
                     return {

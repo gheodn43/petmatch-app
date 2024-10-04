@@ -61,6 +61,27 @@ const PetCard: React.FC = () => {
     [firstSelectedPet, state.isChangedLDB]
   );
 
+  const fetchNextRcm = async () => {
+    if (!firstSelectedPet) {
+      dispatch({ type: 'SET_LOADING', payload: false });
+      return;
+    }
+    const petId = firstSelectedPet.pet_id;
+    try {
+      const response = await axios.get(`/api/pet/getRcms/${petId}`);
+      const rcmPets = response.data.rcmPets;
+      if (!rcmPets || rcmPets.length === 0) {
+        dispatch({ type: 'SET_NO_RCMS', payload: true });
+        return;
+      } else {
+        await dbPet.rcm.update(petId,{ recommended_pets: rcmPets });
+      }
+    } catch (error) {
+      console.error('Error fetching recommended pets:', error);
+    } finally {
+      dispatch({ type: 'SET_LOADING', payload: false });
+    }
+  }
   useEffect(() => {
     const fetchRcm = async () => {
       if (!firstSelectedPet) {
@@ -95,7 +116,8 @@ const PetCard: React.FC = () => {
 
   const handleNextPet = () => {
     if (currentIndex === (rcms?.length || 0) - 1) {
-      dispatch({ type: 'SET_NO_RCMS', payload: true });
+      fetchNextRcm();
+      //dispatch({ type: 'SET_NO_RCMS', payload: true });
     } else {
       dispatch({ type: 'NEXT_PET' });
     }
