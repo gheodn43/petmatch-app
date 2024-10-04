@@ -15,6 +15,7 @@ const GoogleOAuth: React.FC = () => {
                 await dbPet.pet.clear();
                 await dbPet.matched.clear();
                 await dbPet.selected.clear();
+                await dbPet.rcm.clear();
 
                 const response = await fetch('/api/auth/login', {
                     method: 'POST',

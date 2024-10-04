@@ -3,6 +3,9 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import { config } from '@fortawesome/fontawesome-svg-core';
 import '@fortawesome/fontawesome-svg-core/styles.css';
 import "./globals.css";
+import Nav from "@/components/nav";
+import { HomeProvider } from "@/providers/HomeContext";
+import { PetsProvider } from "@/providers/PetsContext";
 config.autoAddCss = false;
 
 export const metadata: Metadata = {
@@ -20,7 +23,12 @@ export default function RootLayout({
       <body
       >
         <GoogleOAuthProvider clientId="717208055945-s60n7eev35fbuvpma1cdpvru5j83fose.apps.googleusercontent.com">
-          {children}
+          <HomeProvider>
+            <PetsProvider>
+              {children}
+              <Nav />
+            </PetsProvider>
+          </HomeProvider>
         </GoogleOAuthProvider>
       </body>
     </html>

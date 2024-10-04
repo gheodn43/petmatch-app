@@ -1,3 +1,4 @@
+
 import { Reviewing } from "./review";
 export const PET_STATUS = {
     ACTIVE: 'active',
@@ -44,6 +45,24 @@ interface PetData {
     pet_star?: number;
     pet_review?: Reviewing[];
 }
+
+interface PetRcm {
+    user_id: string;
+    pet_id: string;
+    pet_type: string;
+    pet_species: string;
+    pet_name: string;
+    pet_age: string;
+    pet_birth_count: string;
+    pet_gender: string;
+    pet_pricing: string;
+    pet_images: string[];
+    pet_certificates: string[];
+    pet_status: string;
+    pet_star: number; 
+    pet_review: Reviewing[];
+    viewed: boolean;
+}
 export class RcmPetDto{
     user_id: string;
     pet_id: string;
@@ -57,13 +76,11 @@ export class RcmPetDto{
     pet_images: string[];
     pet_certificates: string[];
     pet_status: string;
-    pet_liked: string[];
-    pet_unliked: string[];
-    pet_matched: string[];
     pet_star: number; 
     pet_review: Reviewing[];
+    viewed: boolean;
 
-    constructor(data: Pet){
+    constructor(data: PetRcm){
         this.user_id = data.user_id;
         this.pet_id = data.pet_id;
         this.pet_type = data.pet_type;
@@ -76,11 +93,9 @@ export class RcmPetDto{
         this.pet_images = data.pet_images || [];
         this.pet_certificates = data.pet_certificates || [];
         this.pet_status = data.pet_status || PET_STATUS.ACTIVE;
-        this.pet_liked = data.pet_liked || [];
-        this.pet_unliked = data.pet_unliked || [];
-        this.pet_matched = data.pet_matched || [];
         this.pet_star = data.pet_star || 0;
         this.pet_review = data.pet_review || [];
+        this.viewed = data.viewed || false;
     }
 }
 export class CreatePetDto {

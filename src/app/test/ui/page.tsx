@@ -1,17 +1,27 @@
+'use client'
+import React, { useState, useEffect } from 'react';
+import PetCardSkeleton from "@/components/skeletonLoading/petcardSkeleton";
+
 export default function TestUI() {
+    const [isLoading, setIsLoading] = useState(true); // Trạng thái loading
+
+    useEffect(() => {
+        // Tạo delay mô phỏng việc tải dữ liệu
+        const timer = setTimeout(() => {
+            setIsLoading(false); // Hết thời gian delay, dừng hiển thị skeleton
+        }, 3000); // 3 giây delay
+
+        // Dọn dẹp timer sau khi component bị unmount
+        return () => clearTimeout(timer);
+    }, []);
+
     return (
-        <div className="fixed inset-0 flex items-center justify-center z-50 bg-custom-gradient">
-            <div className="relative">
-                <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-72 h-72  bg-white bg-opacity-20 rounded-full animate-pulse-custom"></div>
-                </div>
-                <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-48 h-48 bg-white bg-opacity-20 rounded-full animate-pulse-custom"></div>
-                </div>
-                <div className=" p-10 animate-pulse-custom">
-                    <img src="/images/logo-color.png" className="w-56" />
-                </div>
-            </div>
+        <div className="flex flex-col items-center justify-center text-black h-full md:py-16">
+            {isLoading ? (
+                <PetCardSkeleton /> // Hiển thị Skeleton Loader khi đang loading
+            ) : (
+                <div className="text-xl font-bold">Nội dung đã tải xong!</div> // Nội dung thực tế sau khi tải
+            )}
         </div>
     );
 }
