@@ -40,8 +40,9 @@ const MatchingSection: React.FC = () => {
                 }
                 try {
                     const response = await axios.get(`/api/pet/getMyMatched/${petId}`);
-                    const fetchedMatched = response.data.matched;
-                    await dbPet.matched.bulkPut(fetchedMatched); // Dexie sẽ cập nhật truy vấn trực tiếp
+                    const { matched, conversation } = response.data;
+                    await dbPet.matched.bulkPut(matched); 
+                    await dbPet.conversation.bulkPut(conversation); 
                 } catch (error) {
                     if (axios.isAxiosError(error)) {
                         console.error('Error fetching matched data:', error.response?.data.message || error.message);
@@ -81,6 +82,7 @@ const MatchingSection: React.FC = () => {
     };
     return (
         <div className="p-4 mt-16 md:mt-0">
+            <h3 className="text-secondary font-sans font-bold block md:hidden">Tương hợp.</h3>
             {matched && matched.length > 0 ? (
                 <div className="flex flex-wrap gap-4">
                     {matched.map((match) => (

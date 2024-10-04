@@ -91,7 +91,8 @@ async function createChatRoom(petAId: string, petAAavatar: string, petAName: str
             created_at: { S: createdAt },
             last_message_at: { S: lastMessageAt },
             petA_avatar: { S: petAAavatar },
-            petB_avatar: { S: petBAvatar }
+            petB_avatar: { S: petBAvatar },
+            start_chating: { BOOL: false }
         }
     };
 

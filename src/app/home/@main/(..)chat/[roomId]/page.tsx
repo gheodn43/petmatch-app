@@ -19,6 +19,7 @@ const ChatPage: React.FC = () => {
     const [partnerInfo, setPartnerInfo] = useState({ pet_id: '', pet_name: '', pet_image: '', created_at: '' });
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const [isSending, setIsSending] = useState(false);
+    const [isNewMatch, setIsNewMatch] = useState<boolean>(false);
     const router = useRouter();
     const { setHomeActiveView } = useHomeContext();
     const messages = chatrooms[roomIdStr] || []; // Lấy tin nhắn từ store Zustand
@@ -42,8 +43,9 @@ const ChatPage: React.FC = () => {
                 });
 
                 // Fetch partner info from the matched table
-                const matchedPets = await dbPet.matched.where('pet_id').equals(firstSelectedPet.pet_id).toArray();
+                const matchedPets = await dbPet.matched.where('room_id').equals(roomIdStr).toArray();
                 if (matchedPets.length > 0) {
+                    setIsNewMatch(true);
                     const firstMatchedPet = matchedPets[0];
                     setPartnerInfo({
                         pet_id: firstMatchedPet.partner_id, // Assuming partner_id corresponds to pet_id in your context
@@ -52,16 +54,30 @@ const ChatPage: React.FC = () => {
                         created_at: firstMatchedPet.created_at
                     });
                 } else {
-                    // Handle the case where no matched pets are found
-                    setPartnerInfo({ pet_id: '', pet_name: '', pet_image: '', created_at: '' }); // Reset partner info if not found
+                    setIsNewMatch(false);
+                    const conversations = await dbPet.conversation.where('room_id').equals(roomIdStr).toArray();
+                    if (conversations.length > 0) {
+                        const firstMatchedPet = conversations[0];
+                        setPartnerInfo({
+                            pet_id: firstMatchedPet.partner_id,
+                            pet_name: firstMatchedPet.partner_name,
+                            pet_image: firstMatchedPet.partner_avatar,
+                            created_at: ''
+                        });
+                    } else {
+                        setPartnerInfo({ pet_id: '', pet_name: '', pet_image: '', created_at: '' }); // Reset partner info if not found
+                    }
                 }
             }
         };
 
 
         const fetchMessages = async () => {
-            if (!loadingMessages) return; // Nếu đã có tin nhắn thì không fetch nữa
-
+            if (!isNewMatch) {
+                setLoadingMessages(false);
+                return;
+            } 
+            if (!loadingMessages) return
             try {
                 setLoadingMessages(true); // Đặt trạng thái đang tải tin nhắn
                 const response = await axios.get(`/api/chat/${roomId}/messages`);
@@ -92,8 +108,27 @@ const ChatPage: React.FC = () => {
 
     const sendMessage = async () => {
         if (newMessage.trim() === '') return;
+        setIsSending(true);
+        if (isNewMatch) {
+            await axios.post(`/api/chat/${roomId}/createConversation`);
 
-        setIsSending(true); // Bắt đầu gửi tin nhắn
+            // Xóa bản ghi trong bảng matched
+            await dbPet.matched.where('room_id').equals(roomIdStr).delete();
+
+            // Thêm bản ghi mới vào bảng conversation
+            await dbPet.conversation.add({
+                room_id: roomIdStr,
+                pet_id: petInfo.pet_id,
+                partner_id: partnerInfo.pet_id,
+                partner_avatar: partnerInfo.pet_image,
+                partner_name: partnerInfo.pet_name,
+                last_message: {
+                    sender_id: petInfo.pet_id,
+                    content: newMessage
+                },
+                sent_at: new Date().toISOString()
+            });
+        }
         try {
             await axios.post(`/api/chat/${roomId}/send`, {
                 message: newMessage,

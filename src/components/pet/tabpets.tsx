@@ -35,6 +35,12 @@ const TabPets: React.FC<TabPetsProps> = ({ pets }) => {
   };
 
   const handleSelectPet = async (pet: PetOverviewDto) => {
+    const alreadySelected = selectedPets.some(selectedPet => selectedPet.pet_id === pet.pet_id);
+    if (alreadySelected) {
+      // Mở pet profile nếu pet đã được chọn
+      //router.push(`/pet/${pet.pet_id}`); 
+      return;
+    }
     if (selectedPets.length > 0) {
       await dbPet.selected.delete(selectedPets[0].pet_id);
     }

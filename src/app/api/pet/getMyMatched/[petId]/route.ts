@@ -1,15 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { DynamoDBClient, QueryCommand } from '@aws-sdk/client-dynamodb';
 import { MatchedItem } from '@/app/model/petMatchedItem';
+import { ConversationItem } from '@/app/model/petConversationItem';
 import { decodedToken } from '@/utils/decodeToken';
 
 const dynamoDB = new DynamoDBClient({});
 
 export async function GET(req: NextRequest, { params }: { params: { petId: string } }) {
-    // const accessToken = req.cookies.get('access_token')?.value;
-    // if (!accessToken) return NextResponse.json({ message: 'Access token is missing.' }, { status: 401 });
-    // const userId = await decodedToken(accessToken);
-    // if (!userId) return NextResponse.json({ message: 'Invalid Access Token' }, { status: 401 });
     const { petId } = params;
     try {
         const paramsA = {
@@ -35,45 +32,106 @@ export async function GET(req: NextRequest, { params }: { params: { petId: strin
         ]);
 
         const matched: Array<MatchedItem> = [];
-        const processedRoomIds = new Set<string>(); 
+        const conversation: Array<ConversationItem> = [];
+        const processedRoomIds = new Set<string>();
 
+        // Helper function to query last message by room_id
+        const fetchLastMessage = async (roomId: string) => {
+            const messageParams = {
+                TableName: 'petmatch-messages',
+                IndexName: 'GSI_RoomId_CreatedAt', // Tên GSI mới cần được tạo
+                KeyConditionExpression: 'room_id = :room_id',
+                ExpressionAttributeValues: {
+                    ':room_id': { S: roomId }
+                },
+                // Sắp xếp giảm dần theo createdAt để lấy tin nhắn mới nhất
+                ScanIndexForward: false, // Sắp xếp giảm dần
+                Limit: 1 // Chỉ lấy 1 tin nhắn gần nhất
+            };
+
+            const messageData = await dynamoDB.send(new QueryCommand(messageParams));
+            if (messageData.Items && messageData.Items.length > 0) {
+                const lastMessage = messageData.Items[0];
+                return {
+                    sender_id: lastMessage.senderId.S!,
+                    content: lastMessage.content.S!,
+                    sent_at: lastMessage.createdAt.S!
+                };
+            }
+            return {
+                sender_id: '',
+                content: '',
+                sent_at: ''
+            };
+        };
 
         if (dataA.Items) {
             for (const item of dataA.Items) {
                 const roomId = item.room_id.S!;
                 if (!processedRoomIds.has(roomId)) {
-                    matched.push({
-                        room_id: roomId,
-                        pet_id: petId,
-                        partner_id: item.ownerB_id.S!, // Đảm bảo không phải undefined
-                        partner_avatar: item.petB_avatar.S!,
-                        partner_name: item.petB_name.S!,  // Đảm bảo không phải undefined
-                        created_at: item.created_at.S! // Đảm bảo không phải undefined
-                    });
-                    processedRoomIds.add(roomId); // Đánh dấu room_id đã xử lý
+                    if (item.start_chating) { // conversation
+                        const lastMessage = await fetchLastMessage(roomId);
+                        conversation.push({
+                            room_id: roomId,
+                            pet_id: petId,
+                            partner_id: item.ownerB_id.S!, 
+                            partner_avatar: item.petB_avatar.S!,
+                            partner_name: item.petB_name.S!,
+                            last_message: {
+                                sender_id: lastMessage.sender_id,
+                                content: lastMessage.content
+                            },
+                            sent_at: lastMessage.sent_at
+                        });
+                    } else { // new matching
+                        matched.push({
+                            room_id: roomId,
+                            pet_id: petId,
+                            partner_id: item.ownerB_id.S!, 
+                            partner_avatar: item.petB_avatar.S!,
+                            partner_name: item.petB_name.S!,
+                            created_at: item.created_at.S!
+                        });
+                    }
+                    processedRoomIds.add(roomId);
                 }
             }
         }
-
 
         if (dataB.Items) {
             for (const item of dataB.Items) {
                 const roomId = item.room_id.S!;
-                if (!processedRoomIds.has(roomId)) {
-                    matched.push({
-                        room_id: roomId,
-                        pet_id: petId,
-                        partner_id: item.ownerA_id.S!, // Đảm bảo không phải undefined
-                        partner_avatar: item.petA_avatar.S!,
-                        partner_name: item.petA_name.S!, // Đảm bảo không phải undefined
-                        created_at: item.created_at.S! // Đảm bảo không phải undefined
-                    });
-                    processedRoomIds.add(roomId); // Đánh dấu room_id đã xử lý
+                if (!processedRoomIds.has(roomId)) {  
+                    if (item.start_chating) { // conversation
+                        const lastMessage = await fetchLastMessage(roomId);
+                        conversation.push({
+                            room_id: roomId,
+                            pet_id: petId,
+                            partner_id: item.ownerA_id.S!,
+                            partner_avatar: item.petA_avatar.S!,
+                            partner_name: item.petA_name.S!,
+                            last_message: {
+                                sender_id: lastMessage.sender_id,
+                                content: lastMessage.content
+                            },
+                            sent_at: lastMessage.sent_at
+                        });
+                    } else { // new match
+                        matched.push({
+                            room_id: roomId,
+                            pet_id: petId,
+                            partner_id: item.ownerA_id.S!,
+                            partner_avatar: item.petA_avatar.S!,
+                            partner_name: item.petA_name.S!,
+                            created_at: item.created_at.S!
+                        });
+                    }
+                    processedRoomIds.add(roomId);
                 }
             }
         }
 
-        return NextResponse.json({ matched });
+        return NextResponse.json({ matched, conversation });
     } catch (error) {
         console.error('Error in getMyMatched handler:', error);
         return NextResponse.json({ message: 'Có lỗi xảy ra' }, { status: 500 });
