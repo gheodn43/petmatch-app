@@ -38,7 +38,7 @@ const CategoryBlogsPage = () => {
       <div className="flex justify-between items-center mb-6">
         {/* Nút để chuyển sang trang tạo blog */}
         <button
-          onClick={() => router.push(`/blog/${category}/create`)}
+          onClick={() => router.push(`/blog/create`)}
           className="p-2 bg-[#FCD146] text-black rounded hover:bg-[#FFC300]"
         >
           Create New Blog

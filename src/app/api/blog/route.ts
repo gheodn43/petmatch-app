@@ -1,68 +1,51 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
-import { v4 as uuidv4 } from 'uuid'; // Để tạo UUID cho blogId
-import { getUserIdFromCookie } from '@/utils/authUtils';
+import { DynamoDBClient, ScanCommand, ScanCommandInput } from '@aws-sdk/client-dynamodb';
 
 const dynamoDB = new DynamoDBClient({}); // Tạo client DynamoDB
 
-// Hàm POST để tạo blog mới
-export async function POST(req: NextRequest) {
+// Hàm GET để lấy danh sách blog với lazy loading
+export async function GET(req: NextRequest) {
   try {
-    const body = await req.json(); // Đọc nội dung từ request body
-    const { title, category, content } = body; // Không cần imageUrl
+    // Lấy các query parameters từ URL
+    const { searchParams } = new URL(req.url);
+    const limit = 10; // Số lượng blog muốn lấy mỗi lần (mặc định là 10)
+    const lastKey = searchParams.get('lastKey'); // Khóa cuối cùng từ lần request trước đó (dành cho phân trang)
 
-    console.log(body);
-    
-    // Lấy `authorId` từ cookie
-    const userIdOrResponse = await getUserIdFromCookie(req);
-    if (userIdOrResponse instanceof NextResponse) return userIdOrResponse;
-    const authorId = userIdOrResponse;
-    console.log(authorId);
-    
-
-    // Kiểm tra đầu vào
-    if (!title || !category || !content) {
-      return NextResponse.json({ error: 'Thiếu thông tin tiêu đề, nội dung hoặc danh mục.' }, { status: 400 });
-    }
-
-    // Kiểm tra `authorId`
-    if (!authorId || typeof authorId !== 'string') {
-      return NextResponse.json({ error: 'Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại.' }, { status: 401 });
-    }
-
-    const blogId = uuidv4(); // Tạo ID duy nhất cho blog
-    const createdAt = new Date().toISOString(); // Thời gian tạo
-
-    // Tạo đối tượng blog để lưu vào DynamoDB
-    const newBlog = {
-      blogId,
-      title,
-      category,
-      content,
-      authorId,
-      createdAt,
+    // Cấu hình lệnh ScanCommand với phân trang
+    const params: ScanCommandInput = {
+      TableName: 'petmatch-blog',
+      Limit: limit, // Giới hạn số lượng blog mỗi lần lấy
     };
 
-    // Lệnh PutItemCommand để lưu blog mới vào DynamoDB
-    const command = new PutItemCommand({
-      TableName: 'petmatch-blog',
-      Item: {
-        blog_id: { S: newBlog.blogId },
-        title: { S: newBlog.title },
-        category: { S: newBlog.category },
-        content: { S: newBlog.content },
-        user_id: { S: newBlog.authorId },
-        created_at: { S: newBlog.createdAt },
-      },
-    });
+    if (lastKey) {
+      // Nếu có `lastKey`, thêm `ExclusiveStartKey` để bắt đầu từ khóa này
+      params.ExclusiveStartKey = { blog_id: { S: lastKey } };
+    }
 
-    // Gửi lệnh lên DynamoDB
-    await dynamoDB.send(command);
+    const command = new ScanCommand(params);
+    const response = await dynamoDB.send(command);
 
-    // Phản hồi thành công với dữ liệu blog mới
-    return NextResponse.json(newBlog, { status: 201 });
+    if (!response.Items || response.Items.length === 0) {
+      return NextResponse.json({ blogs: [], lastKey: null }, { status: 200 });
+    }
+
+    // Chuyển đổi kết quả từ DynamoDB thành các đối tượng blog
+    const blogs = response.Items.map((item) => ({
+      blogId: item.blog_id.S || '',
+      title: item.title.S || '',
+      category: item.category.S || '',
+      content: item.content.S || '',
+      authorId: item.user_id.S || '',
+      createdAt: item.created_at.S || '',
+    }));
+
+    // `lastEvaluatedKey` sẽ có giá trị nếu còn dữ liệu phía sau
+    const lastEvaluatedKey = response.LastEvaluatedKey?.blog_id?.S || null;
+
+    // Phản hồi với danh sách blog và khóa cuối cùng (dành cho phân trang)
+    return NextResponse.json({ blogs, lastKey: lastEvaluatedKey }, { status: 200 });
   } catch (error) {
-    console.error('Error creating blog:', error);
-    return NextResponse.json({ error: 'Không thể tạo blog mới. Chi tiết lỗi: ' + (error as Error).message }, { status: 500 });
+    console.error('Error fetching blogs with lazy loading:', error);
+    return NextResponse.json({ error: 'Không thể lấy danh sách blog.' }, { status: 500 });
   }
 }

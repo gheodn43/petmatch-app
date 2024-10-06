@@ -77,7 +77,7 @@ export default function MyComponent() {
 
     try {
       // Gửi dữ liệu tiêu đề, nội dung và danh mục (category) lên server
-      const response = await axios.post("/api/blog", {
+      const response = await axios.post("/api/blog/create", {
         title: title,
         content: value,
         category: category, // Danh mục mà người dùng đã chọn
@@ -126,8 +126,8 @@ export default function MyComponent() {
           className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#FFC629] focus:border-transparent"
         >
           <option hidden value="">Select a Category</option>
-          <option value="Dog">Dog</option>
-          <option value="Cat">Cat</option>
+          <option value="Chó">Chó</option>
+          <option value="Mèo">Mèo</option>
           <option value="Hamster">Hamster</option>
         </select>
       </div>
