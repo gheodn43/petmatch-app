@@ -1,12 +1,13 @@
 "use client";
-import React, { useState, useRef, useCallback } from "react";
-import ReactQuill from "react-quill";
-// import dynamic from "next/dynamic";
+import React, { useState, useCallback } from "react";
+import dynamic from "next/dynamic";
 import "react-quill/dist/quill.snow.css";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage"; // Import Firebase Storage SDK
 import { storage } from "@/lib/firebase";
 import axios from "axios";
-// const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
+
+// Import `ReactQuill` dynamically để ngắt SSR (Server-Side Rendering)
+const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 
 // Hàm upload ảnh lên Firebase Storage
 const uploadImage = async (file: File) => {
@@ -24,14 +25,11 @@ const uploadImage = async (file: File) => {
 export default function MyComponent() {
   const [title, setTitle] = useState(""); // Tiêu đề của blog
   const [category, setCategory] = useState(""); // Danh mục của blog
-  const [value, setValue] = useState(""); // Nội dung của trình soạn thảo
-  const reactQuillRef = useRef<ReactQuill>(null);
+  const [content, setContent] = useState(""); // Nội dung của trình soạn thảo
 
   // Hàm xử lý khi nội dung trong editor thay đổi
   const handleChange = (content: string) => {
-    setValue(content); // Cập nhật state value với nội dung mới
-    console.log(value);
-
+    setContent(content); // Cập nhật state value với nội dung mới
   };
 
   // Hàm xử lý khi người dùng nhấn nút hình ảnh trên toolbar
@@ -45,22 +43,11 @@ export default function MyComponent() {
       const file = input.files ? input.files[0] : null;
       if (file) {
         try {
-          const quillEditor = reactQuillRef.current?.getEditor();
+          // Upload trực tiếp lên Firebase và nhận URL thực tế
+          const imageUrl = await uploadImage(file);
 
-          if (quillEditor) {
-            const range = quillEditor.getSelection();
-
-            // Kiểm tra và đảm bảo rằng `range` tồn tại
-            if (range) {
-              quillEditor.focus();
-
-              // Upload trực tiếp lên Firebase và nhận URL thực tế
-              const imageUrl = await uploadImage(file);
-
-              // Chèn URL của ảnh từ Firebase vào editor
-              quillEditor.insertEmbed(range.index, "image", imageUrl);
-            }
-          }
+          // Chèn URL của ảnh từ Firebase vào nội dung hiện tại
+          setContent((prevContent) => `${prevContent}<img src="${imageUrl}" alt="uploaded image"/>`);
         } catch (error) {
           console.error("Failed to upload image:", error);
         }
@@ -70,7 +57,7 @@ export default function MyComponent() {
 
   // Hàm gửi dữ liệu lên API
   const handleSubmit = async () => {
-    if (!title || !value) {
+    if (!title || !content) {
       alert("Please enter both title and content");
       return;
     }
@@ -79,14 +66,14 @@ export default function MyComponent() {
       // Gửi dữ liệu tiêu đề, nội dung và danh mục (category) lên server
       const response = await axios.post("/api/blog/create", {
         title: title,
-        content: value,
+        content: content,
         category: category, // Danh mục mà người dùng đã chọn
       });
 
       console.log("Blog created successfully:", response.data);
       alert("Blog created successfully!");
       setTitle(""); // Reset lại tiêu đề
-      setValue(""); // Reset lại nội dung
+      setContent(""); // Reset lại nội dung
     } catch (error) {
       console.error("Failed to create blog:", error);
       alert("Failed to create blog!");
@@ -125,7 +112,9 @@ export default function MyComponent() {
           onChange={(e) => setCategory(e.target.value)}
           className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#FFC629] focus:border-transparent"
         >
-          <option hidden value="">Select a Category</option>
+          <option hidden value="">
+            Select a Category
+          </option>
           <option value="Chó">Chó</option>
           <option value="Mèo">Mèo</option>
           <option value="Hamster">Hamster</option>
@@ -134,11 +123,8 @@ export default function MyComponent() {
 
       {/* Trình soạn thảo văn bản ReactQuill */}
       <div className="mb-6">
-        <label className="block text-lg font-medium mb-2 text-gray-700">
-          Blog Content:
-        </label>
+        <label className="block text-lg font-medium mb-2 text-gray-700">Blog Content:</label>
         <ReactQuill
-          ref={reactQuillRef}
           theme="snow"
           placeholder="Start writing..."
           modules={{
@@ -182,8 +168,8 @@ export default function MyComponent() {
             "video",
             "code-block",
           ]}
-          value={value}
-          onChange={handleChange} // Gọi hàm handleChange khi nội dung thay đổi
+          value={content}
+          onChange={handleChange}
           className="border border-gray-300 rounded-lg shadow-sm"
         />
       </div>
@@ -198,6 +184,5 @@ export default function MyComponent() {
         </button>
       </div>
     </div>
-
   );
 }

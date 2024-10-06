@@ -1,27 +1,19 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { DynamoDBClient, ScanCommand, ScanCommandInput } from '@aws-sdk/client-dynamodb';
 
 const dynamoDB = new DynamoDBClient({}); // Tạo client DynamoDB
 
 // Hàm GET để lấy danh sách blog với lazy loading
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     // Lấy các query parameters từ URL
-    const { searchParams } = new URL(req.url);
-    const limit = 10; // Số lượng blog muốn lấy mỗi lần (mặc định là 10)
-    const lastKey = searchParams.get('lastKey'); // Khóa cuối cùng từ lần request trước đó (dành cho phân trang)
+    const limit = 10; // Số lượng blog muốn lấy mỗi lần a cuối cùng từ lần request trước đó (dành cho phân trang)
 
     // Cấu hình lệnh ScanCommand với phân trang
     const params: ScanCommandInput = {
       TableName: 'petmatch-blog',
       Limit: limit, // Giới hạn số lượng blog mỗi lần lấy
     };
-
-    if (lastKey) {
-      // Nếu có `lastKey`, thêm `ExclusiveStartKey` để bắt đầu từ khóa này
-      params.ExclusiveStartKey = { blog_id: { S: lastKey } };
-    }
-
     const command = new ScanCommand(params);
     const response = await dynamoDB.send(command);
 
