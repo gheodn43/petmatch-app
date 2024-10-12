@@ -7,6 +7,7 @@ const dynamoDB = new DynamoDBClient({});
 
 export async function GET(req: NextRequest, { params }: { params: { category: string } }) {
   const { category } = params;
+  const limit = 10;
   try {
     if (!category) {
       return NextResponse.json({ error: 'Thiếu category trong yêu cầu' }, { status: 400 });
@@ -19,7 +20,7 @@ export async function GET(req: NextRequest, { params }: { params: { category: st
       ExpressionAttributeValues: {
         ':category': { S: category }
       },
-      Limit: 50,
+      Limit: limit,
     });
 
     const response = await dynamoDB.send(command);

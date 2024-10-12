@@ -30,8 +30,8 @@ export async function POST(req: NextRequest) {
             orderCode: Number(String(Date.now()).slice(-6)),
             amount: amount,
             description: `THANH TOAN GOI ${packageName}`,
-            returnUrl: `${DOMAIN}/membership-pkgs/payment-success`,
-            cancelUrl: `${DOMAIN}/membership-pkgs`
+            returnUrl: `https://petmatch-app-fumn.vercel.app/membership-pkgs/payment-success`,
+            cancelUrl: `https://petmatch-app-fumn.vercel.app/membership-pkgs`
         };
 
         let paymentLinkResponse;

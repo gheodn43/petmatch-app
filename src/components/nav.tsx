@@ -3,31 +3,20 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faComment, faShield, faUser, faHeartCircleCheck } from '@fortawesome/free-solid-svg-icons';
 import { useRouter, usePathname } from "next/navigation"; // Import usePathname
 import { useHomeContext } from '@/providers/HomeContext';
-import { useEffect, useState } from 'react';
 import { dbPet } from '@/localDB/pet.db';
+import { useLiveQuery } from 'dexie-react-hooks';
 
 export default function Nav() {
     const router = useRouter();
     const { homeActiveView, setHomeActiveView } = useHomeContext();
     const pathname = usePathname(); // Lấy đường dẫn hiện tại
 
-    const [petTypes, setPetTypes] = useState<string[]>([]);
-
-  useEffect(() => {
-    // Gọi hàm để lấy giá trị pet_type khi component được mount
-    const fetchPetTypes = async () => {
-      try {
+    const petTypes = useLiveQuery(async () => {
         const types = await dbPet.pet.toArray();
-        const distinctPetTypes = Array.from(new Set(types.map(pet => pet.pet_type)));
-        setPetTypes(distinctPetTypes);
-      } catch (error) {
-        console.error('Failed to retrieve pet types:', error);
-      }
-    };
+        return Array.from(new Set(types.map(pet => pet.pet_type))); // Trả về danh sách pet_type không trùng lặp
+      }, []);
 
-    fetchPetTypes();
-  }, []);
-
+  console.log(petTypes);
   
 
     // Hàm xử lý click cho các nút

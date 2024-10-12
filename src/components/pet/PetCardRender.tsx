@@ -19,7 +19,7 @@ const PetCardRender: React.FC<PetCardRenderProps> = ({ currentPet, onLike, onDis
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'ArrowRight') {
-        nextImage(); 
+        nextImage();
       } else if (event.key === 'ArrowLeft') {
         previousImage();
       }
@@ -34,11 +34,11 @@ const PetCardRender: React.FC<PetCardRenderProps> = ({ currentPet, onLike, onDis
   const nextImage = () => {
     setCurrentImageIndex((prevIndex) => prevIndex === currentPet.pet_images.length - 1 ? 0 : prevIndex + 1)
   };
-  
+
   const previousImage = () => {
-      setCurrentImageIndex((prevIndex) => prevIndex === 0 ? currentPet.pet_images.length - 1 : prevIndex - 1);
+    setCurrentImageIndex((prevIndex) => prevIndex === 0 ? currentPet.pet_images.length - 1 : prevIndex - 1);
   };
-  
+
 
   const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
     touchStartRef.current = e.touches[0].clientX; // Lưu vị trí chạm ban đầu
@@ -82,7 +82,7 @@ const PetCardRender: React.FC<PetCardRenderProps> = ({ currentPet, onLike, onDis
                 {currentPet?.pet_species}
               </span>
               <span className="bg-gray-800 text-yellow-400 px-2 py-1 rounded-md text-xs">
-                {currentPet?.pet_pricing} VNĐ
+                {(Number(currentPet?.pet_pricing) || 0).toLocaleString('vi-VN')} VNĐ
               </span>
             </div>
             <div className="mt-2 text-sm">
