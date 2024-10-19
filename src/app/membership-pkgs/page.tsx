@@ -32,9 +32,6 @@ export default function MembershipPkgs() {
                         <li><FontAwesomeIcon size='2xl' icon={faCheck} className="text-[#09F811] mr-5" />Quảng cáo hiển thị.</li>
                         <li><FontAwesomeIcon size='2xl' icon={faCheck} className="text-[#09F811] mr-5" />Hồ sơ hiển thị thông thường trong tìm kiếm.</li>
                     </ul>
-                    <span className='text-gray-800 font-extralight text-xs italic'>
-                    *Dành cho những ai muốn bắt đầu trải nghiệm cơ bản, tìm kiếm đối tác thú cưng miễn phí!
-                    </span>
                     {/* <button 
                         className="mt-4 p-2 bg-gray-800 text-white rounded"
                         onClick={() => handlePayment('VIP')}
@@ -59,9 +56,6 @@ export default function MembershipPkgs() {
                     >
                         Thanh toán
                     </button>
-                    <span className='text-gray-800 font-extralight text-xs italic'>
-                    *Dành cho những người dùng nghiêm túc muốn tìm đối tác chất lượng và có trải nghiệm tốt nhất trên PetMatch!
-                    </span>
                 </div>
                 <div className="flex flex-col p-10 w-full h-3/5 xl:w-[25%] bg-gradient-to-b from-[#FFF9E4] to-[#FFD151] bg-opacity-50 border-4 border-gray-200 rounded-lg shadow-lg relative xl:bottom-[10%]">
                     <div className='flex items-center justify-center flex-col border-b-2 border-black rounded-sm'>
@@ -81,9 +75,6 @@ export default function MembershipPkgs() {
                     >
                         Thanh toán
                     </button>
-                    <span className='text-gray-800 font-extralight text-xs italic'>
-                    *Dành cho những người dùng nghiêm túc muốn tìm đối tác chất lượng và có trải nghiệm tốt nhất trên PetMatch!
-                    </span>
                 </div>
                 
             </div>
