@@ -35,7 +35,7 @@ export default function MyComponent() {
     input.setAttribute("type", "file");
     input.setAttribute("accept", "image/*");
     input.click();
-
+  
     input.onchange = async () => {
       const file = input.files?.[0];
       if (file) {
@@ -43,11 +43,18 @@ export default function MyComponent() {
           const imageUrl = await uploadImage(file);
           setContent((prevContent) => `${prevContent}<img src="${imageUrl}" alt="Uploaded image"/>`);
         } catch (error) {
-          alert(error.message);
+          // Type narrowing: Check if the error is an instance of Error
+          if (error instanceof Error) {
+            alert(error.message);
+          } else {
+            console.error("Unexpected error:", error);
+            alert("An unexpected error occurred. Please try again.");
+          }
         }
       }
     };
   }, []);
+  
 
   const handleSubmit = async () => {
     if (!title || !content || !category) {
