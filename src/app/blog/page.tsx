@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { format } from 'date-fns';
@@ -14,81 +14,48 @@ interface Blog {
 }
 
 export default function CategoryBlogsPage() {
-  const [blogs, setBlogs] = useState<Blog[]>([]); // Danh sách các blog
-  const [loading, setLoading] = useState(false); // Trạng thái loading
-  const [lastKey, setLastKey] = useState<string | null>(null); // Khóa cuối cùng của danh sách đã tải
-  const [limit] = useState(10); // Số lượng blog muốn lấy mỗi lần
+  const [blogs, setBlogs] = useState<Blog[]>([]);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const observerRef = useRef<HTMLDivElement | null>(null); // Tạo một ref cho observer
 
-  // Hàm gọi API để lấy blog từ server với phân trang
-  const fetchBlogs = async () => {
-    if (loading) return; // Nếu đang trong trạng thái loading, không gọi API nữa
+  // Fetch all blogs from the API
+  const fetchBlogs = useCallback(async () => {
     setLoading(true);
     try {
       const response = await axios.get('/api/blog', {
-        params: {
-          limit: limit, // Số lượng blog mỗi lần lấy
-          lastKey: lastKey, // Khóa cuối cùng của request trước đó
-        },
+        params: { limit: 100 }, // Adjust the limit as needed
       });
 
-      const { blogs: newBlogs, lastKey: newLastKey } = response.data;
-
-      setBlogs((prevBlogs) => [...prevBlogs, ...newBlogs]); // Thêm các blog mới vào danh sách hiện tại
-      setLastKey(newLastKey); // Cập nhật khóa cuối cùng cho lần tải sau
+      setBlogs(response.data.blogs);
     } catch (error) {
       console.error('Error fetching blogs:', error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return format(date, 'dd MMM yyyy'); // Định dạng ngày thành dạng: 01 Jan 2024
-  };
-
-  // Gọi hàm `fetchBlogs` khi component được mount lần đầu
-  useEffect(() => {
-    fetchBlogs();
   }, []);
 
-  // Sử dụng IntersectionObserver để tự động tải thêm dữ liệu khi cuộn tới cuối
+  // Fetch blogs on mount
   useEffect(() => {
-    if (loading) return; // Không chạy observer khi đang loading
-    const observer = new IntersectionObserver(
-      (entries) => {
-        // Kiểm tra nếu phần tử cuối cùng xuất hiện trong view
-        if (entries[0].isIntersecting && lastKey) {
-          fetchBlogs(); // Tự động gọi API để tải thêm blog
-        }
-      },
-      { threshold: 1.0 } // Chỉ kích hoạt khi toàn bộ phần tử trong view
-    );
+    fetchBlogs();
+  }, [fetchBlogs]);
 
-    if (observerRef.current) {
-      observer.observe(observerRef.current); // Gắn observer với phần tử cuối cùng trong danh sách
-    }
-
-    return () => {
-      if (observerRef.current) observer.unobserve(observerRef.current); // Cleanup observer
-    };
-  }, [lastKey, loading]);
+  // Format date utility
+  const formatDate = (dateString: string) =>
+    format(new Date(dateString), 'dd MMM yyyy');
 
   return (
     <div className="text-black p-4">
       <div className="flex justify-between items-center mb-6">
-        {/* Nút để chuyển sang trang tạo blog */}
         <button
-          onClick={() => router.push(`/blog/create`)}
+          onClick={() => router.push('/blog/create')}
           className="p-2 bg-[#FCD146] text-black rounded hover:bg-[#FFC300]"
         >
           Create New Blog
         </button>
       </div>
-      {loading && blogs.length === 0 ? (
+
+      {loading ? (
         <div className="flex justify-center">
-          {/* Spinner khi đang tải dữ liệu lần đầu */}
           <div className="spinner"></div>
         </div>
       ) : blogs.length === 0 ? (
@@ -102,12 +69,14 @@ export default function CategoryBlogsPage() {
               onClick={() => router.push(`/blog/${blog.category}/${blog.blogId}`)}
             >
               <h2 className="text-xl font-semibold mb-2">{blog.title}</h2>
-              {/* Định dạng ngày tháng cho `createdAt` */}
               <p className="text-xs text-gray-400">Created At: {formatDate(blog.createdAt)}</p>
               <div
                 className="text-sm mt-2"
                 dangerouslySetInnerHTML={{
-                  __html: blog.content.length > 100 ? `${blog.content.slice(0, 100)}...` : blog.content,
+                  __html:
+                    blog.content.length > 100
+                      ? `${blog.content.slice(0, 100)}...`
+                      : blog.content,
                 }}
               ></div>
             </div>
@@ -115,13 +84,7 @@ export default function CategoryBlogsPage() {
         </div>
       )}
 
-      {/* Phần tử vô hình để gắn với observer */}
-      <div ref={observerRef} className="h-1"></div>
-
-      {/* Hiển thị trạng thái loading khi kéo xuống cuối trang */}
-      {loading && blogs.length > 0 && (
-        <div className="lds-ripple"><div></div><div></div></div>
-      )}
+      {blogs.length > 0 && <div className="text-center">All blogs loaded.</div>}
     </div>
   );
 }
