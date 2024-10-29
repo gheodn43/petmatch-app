@@ -15,8 +15,6 @@ export default function Nav() {
         const types = await dbPet.pet.toArray();
         return Array.from(new Set(types.map(pet => pet.pet_type))); // Trả về danh sách pet_type không trùng lặp
       }, []);
-
-  console.log(petTypes);
   
 
     // Hàm xử lý click cho các nút
