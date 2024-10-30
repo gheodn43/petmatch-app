@@ -4,6 +4,8 @@ import { useParams } from 'next/navigation';
 import axios from 'axios';
 import { Blog, Comment } from '@/app/model/blog';
 
+
+
 const BlogDetailPage = () => {
   const { category, blogId } = useParams(); // Lấy category và blogId từ URL
   const [blog, setBlog] = useState<Blog | null>(null);
@@ -52,7 +54,6 @@ const BlogDetailPage = () => {
     try {
       const response = await axios.post('/api/comments', {
         blogId,
-        authorId: 'cb7bbce9-b70c-4292-a2c2-ea7beadb421a', //TODO chỉnh userID
         content: comment
       });
 
@@ -74,11 +75,10 @@ const BlogDetailPage = () => {
   if (!blog) {
     return <p>Blog not found</p>;
   }
-  console.log(comments);
 
 
   return (
-    <div className="p-6 min-h-screen text-black">
+    <div className="p-6 min-h-screen text-black mb-6">
       {/* Khu vực hiển thị chi tiết blog */}
       <div className="bg-white p-6 rounded-lg shadow-lg">
         <h1 className="text-3xl font-bold mb-4">{blog.title}</h1>
@@ -106,7 +106,7 @@ const BlogDetailPage = () => {
       </div>
 
       {/* Khu vực nhập comment */}
-      <div className="bg-white mt-6 p-4 rounded-lg shadow-lg">
+      <div className="bg-white p-4 my-2 rounded-lg shadow-lg mb-6">
         <h3 className="text-lg font-bold mb-4">Add a Comment</h3>
         {/* Container cho textarea và button */}
         <div className="flex items-start space-x-4">

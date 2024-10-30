@@ -6,6 +6,7 @@ import {
   BatchGetItemCommand,
 } from "@aws-sdk/client-dynamodb";
 import { v4 as uuidv4 } from "uuid"; // Để tạo UUID cho comment
+import { getUserIdFromCookie } from "@/utils/authUtils";
 
 const dynamoDB = new DynamoDBClient({});
 
@@ -91,12 +92,16 @@ export async function GET(req: NextRequest) {
 }
 
 // Hàm POST để tạo comment mới
+// Hàm POST để tạo comment mới
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { blogId, authorId, content } = body;
+    const { blogId, content } = body;
+    const userIdOrResponse = await getUserIdFromCookie(req);
+    if (userIdOrResponse instanceof NextResponse) return userIdOrResponse;
+    const authorId = userIdOrResponse;
 
-    if (!blogId || !authorId || !content) {
+    if (!blogId || !authorId || !content || content.trim().length === 0) {
       return NextResponse.json(
         { error: "Thiếu thông tin cần thiết trong yêu cầu" },
         { status: 400 }
