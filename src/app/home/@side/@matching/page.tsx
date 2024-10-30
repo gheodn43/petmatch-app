@@ -82,7 +82,7 @@ const MatchingSection: React.FC = () => {
     };
     return (
         <div className="p-4 mt-16 md:mt-0">
-            <h3 className="text-secondary font-sans font-bold block md:hidden">Tương hợp.</h3>
+            <h3 className="text-secondary font-sans font-bold block md:hidden">Tương hợp mới.</h3>
             {matched && matched.length > 0 ? (
                 <div className="flex flex-wrap gap-4">
                     {matched.map((match) => (
@@ -107,7 +107,7 @@ const MatchingSection: React.FC = () => {
                 </div>
             ) : (
                 <div className="col-span-3 text-center text-gray-500">
-                    Chưa có tương hợp nào
+                    Chưa có tương hợp mới
                 </div>
             )}
         </div>

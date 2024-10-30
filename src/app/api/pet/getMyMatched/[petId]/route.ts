@@ -74,7 +74,8 @@ export async function GET(req: NextRequest, { params }: { params: { petId: strin
                         conversation.push({
                             room_id: roomId,
                             pet_id: petId,
-                            partner_id: item.ownerB_id.S!, 
+                            owner_partner_id: item.ownerB_id.S!, 
+                            partner_id: item.petB_id.S!,
                             partner_avatar: item.petB_avatar.S!,
                             partner_name: item.petB_name.S!,
                             last_message: {
@@ -87,7 +88,8 @@ export async function GET(req: NextRequest, { params }: { params: { petId: strin
                         matched.push({
                             room_id: roomId,
                             pet_id: petId,
-                            partner_id: item.ownerB_id.S!, 
+                            owner_partner_id: item.ownerB_id.S!,
+                            partner_id: item.petB_id.S!, 
                             partner_avatar: item.petB_avatar.S!,
                             partner_name: item.petB_name.S!,
                             created_at: item.created_at.S!
@@ -107,7 +109,8 @@ export async function GET(req: NextRequest, { params }: { params: { petId: strin
                         conversation.push({
                             room_id: roomId,
                             pet_id: petId,
-                            partner_id: item.ownerA_id.S!,
+                            owner_partner_id: item.ownerA_id.S!,
+                            partner_id: item.petA_id.S!,
                             partner_avatar: item.petA_avatar.S!,
                             partner_name: item.petA_name.S!,
                             last_message: {
@@ -120,7 +123,8 @@ export async function GET(req: NextRequest, { params }: { params: { petId: strin
                         matched.push({
                             room_id: roomId,
                             pet_id: petId,
-                            partner_id: item.ownerA_id.S!,
+                            owner_partner_id: item.ownerA_id.S!,
+                            partner_id: item.petA_id.S!,
                             partner_avatar: item.petA_avatar.S!,
                             partner_name: item.petA_name.S!,
                             created_at: item.created_at.S!
