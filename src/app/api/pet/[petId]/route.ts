@@ -16,12 +16,15 @@ export async function GET(req: NextRequest, { params }: { params: { petId: strin
                 ':petId': { S: petId }
             }
         };
+        
         const petResponse = await dynamoDB.send(new QueryCommand(getPetParams));
         const petData = petResponse.Items?.[0];
+        
         if (!petData) {
             return NextResponse.json({ message: 'Pet not found' }, { status: 404 });
         }
 
+        // Xử lý danh sách đánh giá
         const petReview = petData.pet_review?.L?.map(review => {
             if (review.M) {
                 return {
@@ -33,8 +36,14 @@ export async function GET(req: NextRequest, { params }: { params: { petId: strin
                 };
             }
             return null;
-        })
-        .filter((review): review is Reviewing => review !== null) || [];
+        }).filter((review): review is Reviewing => review !== null) || [];
+
+        // Tính tổng rating và số lượng đánh giá
+        const totalRating = petReview.reduce((acc, review) => acc + review.rating, 0);
+        const numberOfReviews = petReview.length;
+
+        // Tính giá trị trung bình
+        const averageRating = numberOfReviews > 0 ? totalRating / numberOfReviews : 0;
 
         // Sử dụng NextResponse.json để trả về kết quả cho client
         return NextResponse.json(
@@ -51,12 +60,13 @@ export async function GET(req: NextRequest, { params }: { params: { petId: strin
                 pet_images: petData.pet_images?.L?.map(image => image.S ?? '') || [],
                 pet_certificates: petData.pet_certificates?.L?.map(cert => cert.S ?? '') || [],
                 pet_status: petData.pet_status.S ?? '',
-                pet_star: petData.pet_star?.N ? Number(petData.pet_star.N) : 0,
+                pet_star: averageRating, // Cập nhật pet_star với giá trị trung bình
                 pet_review: petReview,
                 viewed: false
             })
         );
     } catch (error) {
+        console.error("Error fetching pet data:", error); // Ghi log lỗi
         return NextResponse.json({ message: 'Có lỗi xảy ra' }, { status: 500 });
     }
 }
