@@ -105,11 +105,12 @@ async function createChatRoom(petAId: string, petAAavatar: string, petAName: str
     }
 }
 
-async function notifyPetB(roomId: string, petAId: string, petAAavatar: string, petAName: string, petBId: string) {
+async function notifyPetB(roomId: string, petAId: string, petAAavatar: string, petAName: string, ownerAId: string, petBId: string) {
     const matchedItem = new MatchedItem({
         room_id: roomId,
         pet_id: petBId,
-        partner_id: petAId, // Pet A
+        owner_partner_id: ownerAId,
+        partner_id: petAId, 
         partner_avatar: petAAavatar,
         partner_name: petAName,
         created_at: new Date().toISOString(),
@@ -134,10 +135,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         if (isMatched) {
             await saveLike(petAId, petBId, ownerAId);
             const roomId = await createChatRoom(petAId, petAAavatar, petAName, ownerAId, petBId);
-            await notifyPetB(roomId, petAId, petAAavatar, petAName, petBId);
+            await notifyPetB(roomId, petAId, petAAavatar, petAName, ownerAId, petBId);
             const matchedItem = new MatchedItem({
                 room_id: roomId,
                 pet_id:petAId,
+                owner_partner_id: petBOwnerId, 
                 partner_id: petBId,
                 partner_avatar: petBAvatar,
                 partner_name: petBName,

@@ -16,7 +16,7 @@ const ChatPage: React.FC = () => {
     const { chatrooms, addMessagesToRoom, updateMessagesForRoom } = useChatStore(); // Lấy dữ liệu từ Zustand
     const [newMessage, setNewMessage] = useState<string>('');
     const [petInfo, setPetInfo] = useState({ pet_id: '', pet_name: '' });
-    const [partnerInfo, setPartnerInfo] = useState({ pet_id: '', pet_name: '', pet_image: '', created_at: '' });
+    const [partnerInfo, setPartnerInfo] = useState({ pet_id: '', owner_id: '', pet_name: '', pet_image: '', created_at: '' });
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const [isSending, setIsSending] = useState(false);
     const [isNewMatch, setIsNewMatch] = useState<boolean>(false);
@@ -49,6 +49,7 @@ const ChatPage: React.FC = () => {
                     const firstMatchedPet = matchedPets[0];
                     setPartnerInfo({
                         pet_id: firstMatchedPet.partner_id, // Assuming partner_id corresponds to pet_id in your context
+                        owner_id: firstMatchedPet.owner_partner_id,
                         pet_name: firstMatchedPet.partner_name,
                         pet_image: firstMatchedPet.partner_avatar,
                         created_at: firstMatchedPet.created_at
@@ -60,12 +61,13 @@ const ChatPage: React.FC = () => {
                         const firstMatchedPet = conversations[0];
                         setPartnerInfo({
                             pet_id: firstMatchedPet.partner_id,
+                            owner_id: firstMatchedPet.owner_partner_id,
                             pet_name: firstMatchedPet.partner_name,
                             pet_image: firstMatchedPet.partner_avatar,
                             created_at: ''
                         });
                     } else {
-                        setPartnerInfo({ pet_id: '', pet_name: '', pet_image: '', created_at: '' }); // Reset partner info if not found
+                        setPartnerInfo({ pet_id: '', owner_id: '', pet_name: '', pet_image: '', created_at: '' }); // Reset partner info if not found
                     }
                 }
             }
@@ -119,6 +121,7 @@ const ChatPage: React.FC = () => {
             await dbPet.conversation.add({
                 room_id: roomIdStr,
                 pet_id: petInfo.pet_id,
+                owner_partner_id: partnerInfo.owner_id,
                 partner_id: partnerInfo.pet_id,
                 partner_avatar: partnerInfo.pet_image,
                 partner_name: partnerInfo.pet_name,
@@ -154,6 +157,9 @@ const ChatPage: React.FC = () => {
         router.back();
         setHomeActiveView('side');
     };
+    const handleOpenPetProfile = (petId: string) =>{
+        router.push(`/pet/info?petId=${petId}`);
+    }
 
     return (
         <div className="flex flex-col py-16">
@@ -164,6 +170,7 @@ const ChatPage: React.FC = () => {
                         src={partnerInfo.pet_image}
                         alt={partnerInfo.pet_name}
                         className={`h-10 w-10 rounded-full object-cover`}
+                        onClick={()=>handleOpenPetProfile(partnerInfo.pet_id)}
                     />
                     <p className='text-gray-400 font-sans font-black'>{partnerInfo.pet_name}</p>
                 </div>
